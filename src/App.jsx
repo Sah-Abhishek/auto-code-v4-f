@@ -1,88 +1,64 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './store/AuthStore';
 import Sidebar, { SidebarProvider, useSidebar } from './components/Sidebar';
+import { RequireAdmin, RequireUser } from './components/ProtectedRoute';
 import ChartDetail from './pages/ChartDetail';
-import Analytics from './pages/Analytics';
-import Dashboard from './pages/Dashboard';
 import WorkQueue from './pages/WorkQueue';
 import DocumentIngestion from './pages/DocumentIngestionPage';
+import AdminLogin from './pages/AdminLogin';
+import UserLogin from './pages/UserLogin';
+import AdminAccounts from './pages/AdminAccounts';
 
-// Layout component that adjusts based on sidebar state
-const Layout = ({ children }) => {
+const UserLayout = ({ children }) => {
   const { isCollapsed } = useSidebar();
-
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar />
-      <main
-        className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'ml-[72px]' : 'ml-64'
-          }`}
-      >
+      <main className={`transition-all duration-300 ease-in-out ${isCollapsed ? 'ml-[72px]' : 'ml-64'}`}>
         {children}
       </main>
     </div>
   );
 };
 
-// Wrapper to provide sidebar context
-const AppContent = () => {
-  return (
-    <SidebarProvider>
-      <Layout>
-        <Routes>
-          {/* Redirect root to dashboard */}
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-
-          {/* Main routes */}
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/work-queue" element={<WorkQueue />} />
-          <Route path="/document-ingestion" element={<DocumentIngestion />} />
-          <Route path="/analytics" element={<Analytics />} />
-
-          {/* Chart detail - full page without sidebar adjustment */}
-          <Route path="/chart/:chartNumber" element={<ChartDetail />} />
-
-          {/* Settings and Help placeholder routes */}
-          <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
-          <Route path="/help" element={<PlaceholderPage title="Help & Support" />} />
-
-          {/* 404 */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </Layout>
-    </SidebarProvider>
-  );
-};
-
-// Placeholder page component
-const PlaceholderPage = ({ title }) => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-2xl font-bold text-slate-900 mb-2">{title}</h1>
-      <p className="text-slate-500">Coming soon...</p>
-    </div>
-  </div>
+const UserArea = () => (
+  <SidebarProvider>
+    <UserLayout>
+      <Routes>
+        <Route path="/work-queue" element={<WorkQueue />} />
+        <Route path="/document-ingestion" element={<DocumentIngestion />} />
+        <Route path="/chart/:chartNumber" element={<ChartDetail />} />
+        <Route path="*" element={<Navigate to="/document-ingestion" replace />} />
+      </Routes>
+    </UserLayout>
+  </SidebarProvider>
 );
 
-// 404 page
-const NotFound = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-6xl font-bold text-slate-300 mb-4">404</h1>
-      <p className="text-slate-600 mb-4">Page not found</p>
-      <a href="/dashboard" className="text-blue-600 hover:text-blue-700">
-        Go to Dashboard
-      </a>
-    </div>
-  </div>
+const RootRedirect = () => {
+  const { isAuthenticated, isAdmin, isUser } = useAuth();
+  if (isAuthenticated && isAdmin) return <Navigate to="/admin/accounts" replace />;
+  if (isAuthenticated && isUser) return <Navigate to="/document-ingestion" replace />;
+  return <Navigate to="/login" replace />;
+};
+
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<RootRedirect />} />
+    <Route path="/login" element={<UserLogin />} />
+    <Route path="/admin/login" element={<AdminLogin />} />
+
+    <Route path="/admin/accounts" element={<RequireAdmin><AdminAccounts /></RequireAdmin>} />
+    <Route path="/admin" element={<Navigate to="/admin/accounts" replace />} />
+
+    <Route path="/*" element={<RequireUser><UserArea /></RequireUser>} />
+  </Routes>
 );
 
 function App() {
   return (
-    <>    {/* <Router> */}
-      < AppContent />
-      {/* </Router > */}
-    </>
-
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 }
 

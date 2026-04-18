@@ -1,16 +1,16 @@
 import { useState, createContext, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard,
   ListTodo,
   FileInput,
-  BarChart3,
   Stethoscope,
   ChevronLeft,
   ChevronRight,
-  Settings,
-  HelpCircle
+  LogOut,
+  User,
+  Activity
 } from 'lucide-react';
+import { useAuth } from '../store/AuthStore';
 
 // Create context for sidebar state
 export const SidebarContext = createContext();
@@ -30,15 +30,11 @@ export const SidebarProvider = ({ children }) => {
 
 const Sidebar = () => {
   const { isCollapsed, setIsCollapsed } = useSidebar();
+  const { user, logout } = useAuth();
 
-  const operationalItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
-    { id: 'work-queue', label: 'Work Queue', icon: ListTodo, path: '/work-queue' },
-  ];
-
-  const systemItems = [
-    { id: 'document-ingestion', label: 'Document Ingestion', icon: FileInput, path: '/document-ingestion' },
-    { id: 'analytics', label: 'Admin & Analytics', icon: BarChart3, path: '/analytics' },
+  const navItems = [
+    { id: 'document-ingestion', label: 'Process Documents', icon: FileInput, path: '/document-ingestion' },
+    { id: 'work-queue', label: 'My Charts', icon: ListTodo, path: '/work-queue' },
   ];
 
   const NavItem = ({ item }) => {
@@ -118,26 +114,43 @@ const Sidebar = () => {
 
       {/* Navigation */}
       <nav className={`flex-1 py-4 space-y-4 overflow-y-auto overflow-x-hidden ${isCollapsed ? 'px-2' : 'px-3'}`}>
-        {/* Operational Section */}
         <div>
-          <SectionLabel>Operational</SectionLabel>
+          <SectionLabel>Workspace</SectionLabel>
           <div className="space-y-1">
-            {operationalItems.map((item) => (
-              <NavItem key={item.id} item={item} />
-            ))}
-          </div>
-        </div>
-
-        {/* System Section */}
-        <div>
-          <SectionLabel>System</SectionLabel>
-          <div className="space-y-1">
-            {systemItems.map((item) => (
+            {navItems.map((item) => (
               <NavItem key={item.id} item={item} />
             ))}
           </div>
         </div>
       </nav>
+
+      {/* User info + logout */}
+      <div className={`border-t border-slate-100 py-3 ${isCollapsed ? 'px-2' : 'px-3'}`}>
+        {!isCollapsed && user && (
+          <div className="px-3 py-2 mb-2 rounded-lg bg-slate-50">
+            <div className="flex items-center gap-2 mb-1">
+              <User className="w-4 h-4 text-slate-500" />
+              <p className="text-sm font-medium text-slate-900 truncate">{user.name || 'User'}</p>
+            </div>
+            {user.clientName && <p className="text-xs text-slate-500 truncate">{user.clientName}</p>}
+            {typeof user.processRemaining === 'number' && (
+              <div className="flex items-center gap-1.5 mt-1.5 text-xs text-slate-600">
+                <Activity className="w-3 h-3" />
+                <span className="font-medium">{user.processRemaining}</span>
+                <span className="text-slate-400">of {user.processLimit} runs left</span>
+              </div>
+            )}
+          </div>
+        )}
+        <button
+          onClick={logout}
+          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all ${isCollapsed ? 'justify-center' : ''}`}
+          title={isCollapsed ? 'Sign out' : ''}
+        >
+          <LogOut className="w-5 h-5" />
+          {!isCollapsed && <span>Sign out</span>}
+        </button>
+      </div>
 
       {/* Bottom Section */}
       {/* <div className={`border-t border-slate-100 py-3 ${isCollapsed ? 'px-2' : 'px-3'}`}> */}
