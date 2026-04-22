@@ -7,15 +7,22 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+
   server: {
     host: '0.0.0.0',
     port: 9010,
+
+    // 🔹 ONLY for local development (npm run dev)
     proxy: {
       '/api': {
-        target: 'http://216.48.183.225:8501',
+        target: 'http://127.0.0.1:8200', // backend running locally on server
         changeOrigin: true,
         secure: false,
       }
     }
+  },
+
+  build: {
+    outDir: 'dist',
   }
 })
