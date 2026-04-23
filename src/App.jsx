@@ -8,6 +8,7 @@ import DocumentIngestion from './pages/DocumentIngestionPage';
 import AdminLogin from './pages/AdminLogin';
 import UserLogin from './pages/UserLogin';
 import AdminAccounts from './pages/AdminAccounts';
+import Analytics from './pages/Analytics';
 
 const UserLayout = ({ children }) => {
   const { isCollapsed } = useSidebar();
@@ -48,6 +49,7 @@ const AppRoutes = () => (
     <Route path="/admin/login" element={<AdminLogin />} />
 
     <Route path="/admin/accounts" element={<RequireAdmin><AdminAccounts /></RequireAdmin>} />
+    <Route path="/admin/analytics" element={<RequireAdmin><Analytics /></RequireAdmin>} />
     <Route path="/admin" element={<Navigate to="/admin/accounts" replace />} />
 
     <Route path="/*" element={<RequireUser><UserArea /></RequireUser>} />

@@ -6,10 +6,46 @@ import {
 import {
   TrendingUp, TrendingDown, BarChart3, Download, ChevronDown,
   CheckCircle2, Target, Edit3, AlertTriangle,
-  Info, CheckCircle, Loader2, Database, Brain, X
+  Info, CheckCircle, Loader2, Database, Brain, X,
+  Shield, LogOut, Users, Clock, Zap
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../store/AuthStore';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
+
+const AdminHeader = ({ logout }) => (
+  <header className="bg-white border-b border-slate-200 sticky top-0 z-10">
+    <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center">
+          <Shield className="w-5 h-5 text-blue-400" />
+        </div>
+        <div>
+          <h1 className="text-lg font-semibold text-slate-900">Admin Portal</h1>
+          <p className="text-xs text-slate-500">Account management &amp; analytics</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Link to="/admin/accounts" className="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
+          <Users className="w-4 h-4" /> Accounts
+        </Link>
+        <Link to="/admin/analytics" className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-900 bg-slate-100 rounded-lg">
+          <BarChart3 className="w-4 h-4" /> Analytics
+        </Link>
+        <button onClick={logout} className="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
+          <LogOut className="w-4 h-4" /> Sign out
+        </button>
+      </div>
+    </div>
+  </header>
+);
+
+const formatSeconds = (s) => {
+  if (s == null) return '—';
+  if (s >= 60) return `${(s / 60).toFixed(2)}m`;
+  return `${s.toFixed(2)}s`;
+};
 
 // Color palette
 const COLORS = {
@@ -24,14 +60,21 @@ const COLORS = {
 const PIE_COLORS = ['#EF4444', '#F97316', '#FBBF24', '#3B82F6', '#10B981'];
 
 const Analytics = () => {
+  const { logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [period, setPeriod] = useState('30');
   const [error, setError] = useState(null);
+  const [pipelineTiming, setPipelineTiming] = useState(null);
+  const [pipelineError, setPipelineError] = useState(null);
 
   useEffect(() => {
     fetchAnalytics();
   }, [period]);
+
+  useEffect(() => {
+    fetchPipelineTiming();
+  }, []);
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -55,12 +98,30 @@ const Analytics = () => {
     }
   };
 
+  const fetchPipelineTiming = async () => {
+    setPipelineError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/charts/analytics/pipeline-timing`);
+      const data = await response.json();
+      if (data.success) {
+        setPipelineTiming(data);
+      } else {
+        setPipelineError(data.error || 'Failed to fetch pipeline timing');
+      }
+    } catch (err) {
+      setPipelineError(err.message);
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-3" />
-          <p className="text-slate-500">Loading analytics...</p>
+      <div className="min-h-screen bg-slate-50">
+        <AdminHeader logout={logout} />
+        <div className="flex items-center justify-center py-24">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-3" />
+            <p className="text-slate-500">Loading analytics...</p>
+          </div>
         </div>
       </div>
     );
@@ -68,17 +129,20 @@ const Analytics = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <div className="text-center max-w-md">
-          <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-          <h2 className="text-lg font-semibold text-slate-900 mb-2">Unable to Load Analytics</h2>
-          <p className="text-slate-500 mb-4">{error}</p>
-          <button
-            onClick={fetchAnalytics}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Try Again
-          </button>
+      <div className="min-h-screen bg-slate-50">
+        <AdminHeader logout={logout} />
+        <div className="flex items-center justify-center py-24">
+          <div className="text-center max-w-md">
+            <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">Unable to Load Analytics</h2>
+            <p className="text-slate-500 mb-4">{error}</p>
+            <button
+              onClick={fetchAnalytics}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            >
+              Try Again
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -98,7 +162,12 @@ const Analytics = () => {
     : [];
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
+    <div className="min-h-screen bg-slate-50">
+      <AdminHeader logout={logout} />
+      <div className="max-w-7xl mx-auto p-6">
+      {/* Pipeline Timing (admin only — gateway perf metrics) */}
+      <PipelineTimingPanel timing={pipelineTiming} error={pipelineError} onRetry={fetchPipelineTiming} />
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -569,9 +638,124 @@ const Analytics = () => {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 };
+
+// Pipeline Timing Panel — admin-only ICD gateway timings
+const PipelineTimingPanel = ({ timing, error, onRetry }) => {
+  if (error) {
+    return (
+      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3">
+        <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+        <div className="flex-1">
+          <p className="font-medium text-amber-900">Pipeline timing unavailable</p>
+          <p className="text-sm text-amber-700">{error}</p>
+        </div>
+        <button onClick={onRetry} className="text-sm text-amber-900 underline">Retry</button>
+      </div>
+    );
+  }
+  if (!timing) {
+    return (
+      <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6 flex items-center gap-3">
+        <Loader2 className="w-5 h-5 text-blue-500 animate-spin" />
+        <p className="text-slate-600 text-sm">Loading gateway pipeline timings…</p>
+      </div>
+    );
+  }
+
+  const { summary, charts } = timing;
+  const stepLabels = {
+    ocr_all: 'OCR (all docs)',
+    consolidate: 'Consolidate',
+    summarize: 'Summarize',
+    coder_rules: 'Coder rules',
+    rag: 'RAG retrieval',
+    corrections: 'Corrections',
+    guidelines: 'Guidelines',
+    agent3: 'Agent 3 (coder)',
+    mimic: 'MIMIC scoring',
+    agent4: 'Agent 4 (review)',
+    save: 'Save',
+  };
+
+  return (
+    <section className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Zap className="w-5 h-5 text-violet-600" />
+          <h3 className="font-semibold text-slate-900">ICD Gateway Pipeline Timing</h3>
+        </div>
+        <span className="text-xs text-slate-500">
+          {summary.chartCount} chart{summary.chartCount === 1 ? '' : 's'} measured
+        </span>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
+        <TimingStat label="Avg total" value={formatSeconds(summary.totalPipeline.avg)} />
+        <TimingStat label="p50 total" value={formatSeconds(summary.totalPipeline.p50)} />
+        <TimingStat label="p95 total" value={formatSeconds(summary.totalPipeline.p95)} />
+        <TimingStat label="Min total" value={formatSeconds(summary.totalPipeline.min)} />
+        <TimingStat label="Max total" value={formatSeconds(summary.totalPipeline.max)} />
+      </div>
+
+      <div className="mb-5">
+        <h4 className="text-sm font-medium text-slate-700 mb-2">Average per step</h4>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+          {Object.entries(stepLabels).map(([k, label]) => (
+            <div key={k} className="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg text-sm">
+              <span className="text-slate-600">{label}</span>
+              <span className="font-mono font-semibold text-slate-900">{formatSeconds(summary.stepAverages[k])}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {charts.length > 0 && (
+        <div>
+          <h4 className="text-sm font-medium text-slate-700 mb-2">Recent charts</h4>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-xs text-slate-500 border-b border-slate-200">
+                  <th className="py-2 pr-3 font-medium">Chart</th>
+                  <th className="py-2 pr-3 font-medium">Facility</th>
+                  <th className="py-2 pr-3 font-medium">Total</th>
+                  <th className="py-2 pr-3 font-medium">OCR</th>
+                  <th className="py-2 pr-3 font-medium">Agent 3</th>
+                  <th className="py-2 pr-3 font-medium">Agent 4</th>
+                  <th className="py-2 pr-3 font-medium">Completed</th>
+                </tr>
+              </thead>
+              <tbody>
+                {charts.slice(0, 25).map((c) => (
+                  <tr key={c.chartNumber} className="border-b border-slate-100">
+                    <td className="py-2 pr-3 font-mono text-xs text-slate-700">{c.chartNumber}</td>
+                    <td className="py-2 pr-3 text-slate-600">{c.facility || '—'}</td>
+                    <td className="py-2 pr-3 font-mono">{formatSeconds(c.totalPipeline)}</td>
+                    <td className="py-2 pr-3 font-mono text-slate-600">{formatSeconds(c.steps.ocr_all)}</td>
+                    <td className="py-2 pr-3 font-mono text-slate-600">{formatSeconds(c.steps.agent3)}</td>
+                    <td className="py-2 pr-3 font-mono text-slate-600">{formatSeconds(c.steps.agent4)}</td>
+                    <td className="py-2 pr-3 text-xs text-slate-500">{c.processingCompletedAt ? new Date(c.processingCompletedAt).toLocaleString() : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
+
+const TimingStat = ({ label, value }) => (
+  <div className="bg-slate-50 rounded-lg px-4 py-3">
+    <div className="text-xs text-slate-500 uppercase tracking-wide">{label}</div>
+    <div className="text-lg font-bold text-slate-900 font-mono">{value}</div>
+  </div>
+);
 
 // Empty State Component
 const EmptyState = ({ message, small = false }) => (

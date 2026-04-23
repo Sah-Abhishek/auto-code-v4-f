@@ -4,11 +4,13 @@ import {
   Search, Filter, Clock, RefreshCw, ChevronDown, ChevronLeft, ChevronRight,
   FileText, CheckCircle2, Loader2, AlertTriangle, Bell, Inbox, XCircle, RotateCcw
 } from 'lucide-react';
+import { useAuth } from '../store/AuthStore';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
 
 const WorkQueue = () => {
   const navigate = useNavigate();
+  const { isAdmin } = useAuth();
   const [charts, setCharts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0, pages: 0 });
@@ -70,6 +72,7 @@ const WorkQueue = () => {
   }, [pagination.page, pagination.limit, filters]);
 
   const fetchStats = async () => {
+    if (!isAdmin) return;
     try {
       const response = await fetch(`${API_BASE_URL}/charts/stats/sla`);
       const data = await response.json();
@@ -82,6 +85,7 @@ const WorkQueue = () => {
   };
 
   const fetchQueueStats = async () => {
+    if (!isAdmin) return;
     try {
       const response = await fetch(`${API_BASE_URL}/documents/queue/stats`);
       const data = await response.json();

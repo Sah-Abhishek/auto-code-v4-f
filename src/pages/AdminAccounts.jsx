@@ -4,6 +4,7 @@ import {
   AlertCircle, CheckCircle2, X, Calendar, FileText, Clock, LogOut,
   BarChart3, TrendingUp, Mail
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthStore';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
@@ -170,12 +171,26 @@ const AdminAccounts = () => {
               <p className="text-xs text-slate-500">Account management &amp; analytics</p>
             </div>
           </div>
-          <button
-            onClick={logout}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" /> Sign out
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              to="/admin/accounts"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-900 bg-slate-100 rounded-lg"
+            >
+              <Users className="w-4 h-4" /> Accounts
+            </Link>
+            <Link
+              to="/admin/analytics"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <BarChart3 className="w-4 h-4" /> Analytics
+            </Link>
+            <button
+              onClick={logout}
+              className="inline-flex items-center gap-2 px-4 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <LogOut className="w-4 h-4" /> Sign out
+            </button>
+          </div>
         </div>
       </header>
 
