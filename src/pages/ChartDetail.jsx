@@ -895,6 +895,8 @@ const ChartDetail = () => {
   const aiSummary = chart?.aiSummary || {};
   const codingNotes = chart?.codingNotes || {};
   const originalAICodes = chart?.originalAICodes || {};
+  const gatewayEncounter = chart?.gatewayEncounter || null;
+  const auditNotes = codingNotes?.audit_notes || gatewayEncounter?.final_codes_json?.audit_notes || '';
   const filteredDocs = getFilteredDocuments();
   const currentDoc = filteredDocs[selectedDocIndex];
 
@@ -1262,6 +1264,136 @@ const ChartDetail = () => {
           </div>
 
           <div className="flex-1 overflow-auto p-4 space-y-5">
+            {/* Gateway encounter metadata */}
+            {gatewayEncounter && (
+              <div className="bg-violet-50 rounded-xl p-4 border border-violet-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <Zap className="w-4 h-4 text-violet-600" />
+                  <h3 className="font-semibold text-violet-900 text-sm">ICD Gateway Encounter</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  {gatewayEncounter.id && (
+                    <div className="col-span-2 flex items-center gap-2">
+                      <span className="text-violet-600">Encounter ID:</span>
+                      <span className="font-mono text-violet-900 truncate">{gatewayEncounter.id}</span>
+                    </div>
+                  )}
+                  {gatewayEncounter.encounter_type && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-violet-600">Type:</span>
+                      <span className="font-medium text-violet-900">{gatewayEncounter.encounter_type}</span>
+                    </div>
+                  )}
+                  {gatewayEncounter.encounter_date && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-violet-600">Date:</span>
+                      <span className="font-medium text-violet-900">{gatewayEncounter.encounter_date}</span>
+                    </div>
+                  )}
+                  {gatewayEncounter.department && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-violet-600">Department:</span>
+                      <span className="font-medium text-violet-900">{gatewayEncounter.department}</span>
+                    </div>
+                  )}
+                  {typeof gatewayEncounter.report_count === 'number' && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-violet-600">Reports:</span>
+                      <span className="font-medium text-violet-900">{gatewayEncounter.report_count}</span>
+                    </div>
+                  )}
+                  {gatewayEncounter.status && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-violet-600">Status:</span>
+                      <span className="font-medium text-violet-900">{gatewayEncounter.status}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Audit notes from gateway */}
+            {auditNotes && (
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <ClipboardList className="w-4 h-4 text-blue-600" />
+                  <h3 className="font-semibold text-blue-900 text-sm">Audit Notes</h3>
+                </div>
+                <p className="text-sm text-blue-900 whitespace-pre-wrap">{auditNotes}</p>
+              </div>
+            )}
+
+            {/* Clinical context (gateway: clinical_summary.clinical_context) */}
+            {gatewayEncounter?.clinical_summary?.clinical_context && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="w-4 h-4 text-slate-600" />
+                  <h3 className="font-semibold text-slate-900 text-sm">Clinical Context</h3>
+                </div>
+                <p className="text-sm text-slate-700 leading-relaxed">{gatewayEncounter.clinical_summary.clinical_context}</p>
+              </div>
+            )}
+
+            {/* Diagnoses & procedures from gateway clinical_summary */}
+            {gatewayEncounter?.clinical_summary && (
+              gatewayEncounter.clinical_summary.primary_diagnoses?.length > 0 ||
+              gatewayEncounter.clinical_summary.secondary_diagnoses?.length > 0 ||
+              gatewayEncounter.clinical_summary.procedures_performed?.length > 0
+            ) && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm space-y-3">
+                <div className="flex items-center gap-2">
+                  <ClipboardCheck className="w-4 h-4 text-emerald-600" />
+                  <h3 className="font-semibold text-slate-900 text-sm">Diagnoses & Procedures</h3>
+                </div>
+                {gatewayEncounter.clinical_summary.primary_diagnoses?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 uppercase mb-1">Primary diagnoses</p>
+                    <ul className="text-sm text-slate-700 list-disc list-inside space-y-0.5">
+                      {gatewayEncounter.clinical_summary.primary_diagnoses.map((d, i) => <li key={i}>{d}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {gatewayEncounter.clinical_summary.secondary_diagnoses?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 uppercase mb-1">Secondary diagnoses</p>
+                    <ul className="text-sm text-slate-700 list-disc list-inside space-y-0.5">
+                      {gatewayEncounter.clinical_summary.secondary_diagnoses.map((d, i) => <li key={i}>{d}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {gatewayEncounter.clinical_summary.procedures_performed?.length > 0 && (
+                  <div>
+                    <p className="text-xs font-medium text-slate-500 uppercase mb-1">Procedures performed</p>
+                    <ul className="text-sm text-slate-700 list-disc list-inside space-y-0.5">
+                      {gatewayEncounter.clinical_summary.procedures_performed.map((d, i) => <li key={i}>{d}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Social history from gateway */}
+            {gatewayEncounter?.clinical_summary?.social_history && (
+              gatewayEncounter.clinical_summary.social_history.tobacco ||
+              gatewayEncounter.clinical_summary.social_history.alcohol ||
+              gatewayEncounter.clinical_summary.social_history.drugs
+            ) && (
+              <div className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <User className="w-4 h-4 text-slate-600" />
+                  <h3 className="font-semibold text-slate-900 text-sm">Social History</h3>
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-sm">
+                  {['tobacco', 'alcohol', 'drugs'].map((k) => (
+                    <div key={k}>
+                      <p className="text-xs text-slate-500 capitalize">{k}</p>
+                      <p className="text-slate-800">{gatewayEncounter.clinical_summary.social_history[k] || '—'}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Patient Demographics */}
             {(aiSummary.patient_demographics || chart?.mrn) && (
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
