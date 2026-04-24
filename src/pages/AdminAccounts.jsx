@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Users, UserPlus, Copy, Check, Ban, Search, Shield, Loader2,
   AlertCircle, CheckCircle2, X, Calendar, FileText, Clock, LogOut,
-  BarChart3, TrendingUp, Mail
+  BarChart3, TrendingUp, Mail, Eye
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthStore';
@@ -343,19 +343,28 @@ const AdminAccounts = () => {
                         <StatusBadge status={a.status} />
                       </td>
                       <td className="px-6 py-4 text-right">
-                        {!a.revoked ? (
-                          <button
-                            onClick={() => handleRevoke(a.code)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+                        <div className="inline-flex items-center gap-1">
+                          <Link
+                            to={`/admin/accounts/${a.code}`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg"
                           >
-                            <Ban className="w-4 h-4" />
-                            Revoke
-                          </button>
-                        ) : (
-                          <span className="text-xs text-slate-400">
-                            Revoked {new Date(a.revokedAt).toLocaleDateString()}
-                          </span>
-                        )}
+                            <Eye className="w-4 h-4" />
+                            View
+                          </Link>
+                          {!a.revoked ? (
+                            <button
+                              onClick={() => handleRevoke(a.code)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg"
+                            >
+                              <Ban className="w-4 h-4" />
+                              Revoke
+                            </button>
+                          ) : (
+                            <span className="text-xs text-slate-400 px-2">
+                              Revoked {new Date(a.revokedAt).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

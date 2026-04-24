@@ -534,9 +534,11 @@ const ReviewModal = ({ isOpen, onClose, onSubmit, workingCodes, submitting }) =>
   );
 };
 
-const ChartDetail = () => {
+const ChartDetail = ({ adminView = false }) => {
   const { chartNumber } = useParams();
   const navigate = useNavigate();
+  const backTarget = adminView ? -1 : '/work-queue';
+  const backLabel = adminView ? 'Back' : 'Back to Work Queue';
   const [chart, setChart] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -599,8 +601,9 @@ const ChartDetail = () => {
     { id: 'discharge', label: 'Discharge', icon: ClipboardCheck }
   ];
 
-  // Check if chart is submitted (read-only mode)
-  const isReadOnly = chart?.reviewStatus === 'submitted';
+  // Check if chart is submitted (read-only mode).
+  // Admin view is always read-only — admins can view but never submit corrections.
+  const isReadOnly = adminView || chart?.reviewStatus === 'submitted';
 
   // Initialize working codes from chart data - DEFAULT TO ACCEPTED
   useEffect(() => {
@@ -883,10 +886,10 @@ const ChartDetail = () => {
         <AlertTriangle className="w-12 h-12 text-red-500 mb-4" />
         <p className="text-slate-600">{error}</p>
         <button
-          onClick={() => navigate('/work-queue')}
+          onClick={() => navigate(backTarget)}
           className="mt-4 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg"
         >
-          Back to Work Queue
+          {backLabel}
         </button>
       </div>
     );
@@ -951,7 +954,7 @@ const ChartDetail = () => {
       {/* Header */}
       <header className="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/work-queue')} className="p-2 hover:bg-slate-100 rounded-lg">
+          <button onClick={() => navigate(backTarget)} className="p-2 hover:bg-slate-100 rounded-lg" title={backLabel}>
             <ArrowLeft className="w-5 h-5 text-slate-600" />
           </button>
           <div>
@@ -1698,7 +1701,11 @@ const ChartDetail = () => {
           <div className="p-4 border-b border-slate-200 bg-white">
             <h2 className="font-semibold text-slate-900">AI Coding Assistance</h2>
             <p className="text-xs text-slate-500">
-              {isReadOnly ? '(View Only - Chart already submitted)' : '(All codes accepted by default - reject or modify as needed)'}
+              {adminView
+                ? '(Admin view - read-only, corrections cannot be submitted)'
+                : isReadOnly
+                  ? '(View Only - Chart already submitted)'
+                  : '(All codes accepted by default - reject or modify as needed)'}
             </p>
           </div>
 

@@ -8,6 +8,7 @@ import DocumentIngestion from './pages/DocumentIngestionPage';
 import AdminLogin from './pages/AdminLogin';
 import UserLogin from './pages/UserLogin';
 import AdminAccounts from './pages/AdminAccounts';
+import AdminAccountProfile from './pages/AdminAccountProfile';
 import Analytics from './pages/Analytics';
 
 const UserLayout = ({ children }) => {
@@ -49,6 +50,8 @@ const AppRoutes = () => (
     <Route path="/admin/login" element={<AdminLogin />} />
 
     <Route path="/admin/accounts" element={<RequireAdmin><AdminAccounts /></RequireAdmin>} />
+    <Route path="/admin/accounts/:code" element={<RequireAdmin><AdminAccountProfile /></RequireAdmin>} />
+    <Route path="/admin/charts/:chartNumber" element={<RequireAdmin><ChartDetail adminView /></RequireAdmin>} />
     <Route path="/admin/analytics" element={<RequireAdmin><Analytics /></RequireAdmin>} />
     <Route path="/admin" element={<Navigate to="/admin/accounts" replace />} />
 
