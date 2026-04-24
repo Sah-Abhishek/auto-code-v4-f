@@ -352,6 +352,92 @@ const Analytics = () => {
         </div>
       )}
 
+      {/* Per-Category AI Accuracy */}
+      {data?.byCategory?.some(c => c.totalAICodes > 0) && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Target className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-slate-900">AI Accuracy by Category</h3>
+            </div>
+            <div className="text-sm text-slate-500">
+              How the AI's codes were corrected across each category
+            </div>
+          </div>
+
+          {/* Bar chart comparing accuracy across categories */}
+          <div className="h-64 mb-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.byCategory.filter(c => c.totalAICodes > 0)} margin={{ top: 10, right: 16, left: 0, bottom: 40 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                <XAxis dataKey="label" stroke="#64748b" tick={{ fontSize: 12 }} angle={-15} textAnchor="end" interval={0} height={60} />
+                <YAxis stroke="#64748b" tick={{ fontSize: 12 }} domain={[0, 100]} unit="%" />
+                <Tooltip
+                  formatter={(value, name) => [`${value}%`, name === 'accuracy' ? 'AI Accuracy' : name]}
+                  contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0' }}
+                />
+                <Bar dataKey="accuracy" name="AI Accuracy" fill={COLORS.success} radius={[6, 6, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Per-category breakdown rows */}
+          <div className="space-y-2 pt-2 border-t border-slate-100">
+            {data.byCategory.map(cat => {
+              const hasRows = cat.totalAICodes > 0;
+              const unchangedPct = hasRows ? (cat.unchangedCodes / cat.totalAICodes) * 100 : 0;
+              const modifiedPct = hasRows ? (cat.modifiedCodes / cat.totalAICodes) * 100 : 0;
+              const rejectedPct = hasRows ? (cat.rejectedCodes / cat.totalAICodes) * 100 : 0;
+              return (
+                <div key={cat.key} className="flex items-center gap-4 py-2">
+                  <div className="w-40 shrink-0">
+                    <p className="text-sm font-medium text-slate-900">{cat.label}</p>
+                    <p className="text-xs text-slate-500">
+                      {hasRows ? `${cat.totalAICodes} AI codes` : 'No AI codes'}
+                    </p>
+                  </div>
+                  <div className="flex-1">
+                    {hasRows ? (
+                      <div className="h-3 rounded-full bg-slate-100 overflow-hidden flex" title={`Unchanged ${cat.unchangedCodes} · Modified ${cat.modifiedCodes} · Rejected ${cat.rejectedCodes}`}>
+                        <div className="bg-emerald-500 h-full" style={{ width: `${unchangedPct}%` }} />
+                        <div className="bg-blue-500 h-full" style={{ width: `${modifiedPct}%` }} />
+                        <div className="bg-red-500 h-full" style={{ width: `${rejectedPct}%` }} />
+                      </div>
+                    ) : (
+                      <div className="h-3 rounded-full bg-slate-100" />
+                    )}
+                  </div>
+                  <div className="w-56 shrink-0 flex items-center justify-end gap-3 text-xs">
+                    <span className="text-emerald-700 font-semibold">
+                      {hasRows ? `${cat.accuracy.toFixed(1)}%` : '—'}
+                    </span>
+                    <span className="text-slate-400">|</span>
+                    <span className="text-blue-700">{cat.modifiedCodes} mod</span>
+                    <span className="text-red-700">{cat.rejectedCodes} rej</span>
+                    {cat.addedCodes > 0 && <span className="text-violet-700">+{cat.addedCodes} added</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex items-center justify-center gap-6 mt-4 text-xs">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded bg-emerald-500"></div>
+              <span className="text-slate-600">Unchanged (accuracy)</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded bg-blue-500"></div>
+              <span className="text-slate-600">Modified</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded bg-red-500"></div>
+              <span className="text-slate-600">Rejected</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Charts Row 1 */}
       <div className="grid grid-cols-2 gap-4 mb-6">
         {/* AI Accuracy Trend */}
