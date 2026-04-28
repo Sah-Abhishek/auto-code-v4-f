@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -7,7 +7,7 @@ import {
   TrendingUp, TrendingDown, BarChart3, Download, ChevronDown,
   CheckCircle2, Target, Edit3, AlertTriangle,
   Info, CheckCircle, Loader2, Database, Brain, X,
-  Shield, LogOut, Users, Clock, Zap
+  Shield, LogOut, Users, Clock, Zap, Stethoscope, CalendarDays, Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthStore';
@@ -59,28 +59,110 @@ const COLORS = {
 
 const PIE_COLORS = ['#EF4444', '#F97316', '#FBBF24', '#3B82F6', '#10B981'];
 
+const FilterDropdown = ({ icon: Icon, value, onChange, options, placeholder, minWidth = '12rem' }) => {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) setOpen(false);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const selected = options.find(o => o.value === value);
+
+  return (
+    <div ref={containerRef} className="relative" style={{ minWidth }}>
+      <button
+        type="button"
+        onClick={() => setOpen(o => !o)}
+        className={`group w-full inline-flex items-center justify-between gap-2 bg-white/90 backdrop-blur border rounded-xl pl-3 pr-3 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md hover:-translate-y-px ${
+          open
+            ? 'border-blue-500 ring-2 ring-blue-500/30'
+            : 'border-slate-200/80 hover:border-blue-300'
+        }`}
+      >
+        <span className="inline-flex items-center gap-2 min-w-0">
+          {Icon && (
+            <Icon className={`w-4 h-4 flex-shrink-0 transition-colors ${
+              open ? 'text-blue-600' : 'text-slate-400 group-hover:text-blue-500'
+            }`} />
+          )}
+          <span className="truncate">{selected ? selected.label : placeholder}</span>
+        </span>
+        <ChevronDown className={`w-4 h-4 flex-shrink-0 transition-all duration-200 ${
+          open ? 'rotate-180 text-blue-500' : 'text-slate-400 group-hover:text-blue-500'
+        }`} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 mt-2 w-full min-w-[14rem] z-50">
+          <div className="bg-white/95 backdrop-blur-xl border border-slate-200/80 rounded-xl shadow-xl shadow-slate-900/10 ring-1 ring-black/5 overflow-hidden">
+            <div className="max-h-72 overflow-y-auto py-1.5">
+              {options.map((opt) => {
+                const isSelected = opt.value === value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => { onChange(opt.value); setOpen(false); }}
+                    className={`w-full text-left px-3 py-2 text-sm flex items-center justify-between gap-2 transition-colors ${
+                      isSelected
+                        ? 'bg-blue-50 text-blue-700 font-medium'
+                        : 'text-slate-700 hover:bg-slate-50 hover:text-slate-900'
+                    }`}
+                  >
+                    <span className="truncate">{opt.label}</span>
+                    {isSelected && <Check className="w-4 h-4 text-blue-600 flex-shrink-0" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const Analytics = () => {
   const { logout } = useAuth();
   const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState(null);
   const [period, setPeriod] = useState('30');
+  const [client, setClient] = useState('all');
+  const [specialty, setSpecialty] = useState('all');
+  const [clientOptions, setClientOptions] = useState([]);
+  const [specialtyOptions, setSpecialtyOptions] = useState([]);
   const [error, setError] = useState(null);
   const [pipelineTiming, setPipelineTiming] = useState(null);
   const [pipelineError, setPipelineError] = useState(null);
 
   useEffect(() => {
     fetchAnalytics();
-  }, [period]);
+  }, [period, client, specialty]);
 
   useEffect(() => {
     fetchPipelineTiming();
+    fetchFilterOptions();
   }, []);
 
   const fetchAnalytics = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/charts/analytics/dashboard?period=${period}`);
+      const params = new URLSearchParams({ period });
+      if (client && client !== 'all') params.set('client', client);
+      if (specialty && specialty !== 'all') params.set('specialty', specialty);
+      const response = await fetch(`${API_BASE_URL}/charts/analytics/dashboard?${params.toString()}`);
       const data = await response.json();
 
       if (data.success) {
@@ -95,6 +177,21 @@ const Analytics = () => {
       setAnalytics(null);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchFilterOptions = async () => {
+    try {
+      const [clientsRes, specialtiesRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/charts/filters/clients`),
+        fetch(`${API_BASE_URL}/charts/filters/specialties`)
+      ]);
+      const clientsData = await clientsRes.json();
+      const specialtiesData = await specialtiesRes.json();
+      if (clientsData.success) setClientOptions(clientsData.clients || []);
+      if (specialtiesData.success) setSpecialtyOptions(specialtiesData.specialties || []);
+    } catch (err) {
+      console.error('Filter options fetch error:', err);
     }
   };
 
@@ -165,9 +262,6 @@ const Analytics = () => {
     <div className="min-h-screen bg-slate-50">
       <AdminHeader logout={logout} />
       <div className="max-w-7xl mx-auto p-6">
-      {/* Pipeline Timing (admin only — gateway perf metrics) */}
-      <PipelineTimingPanel timing={pipelineTiming} error={pipelineError} onRetry={fetchPipelineTiming} />
-
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -175,31 +269,46 @@ const Analytics = () => {
           <p className="text-slate-500 text-sm">AI performance metrics and system analytics</p>
         </div>
 
-        <div className="flex items-center gap-3">
-          {/* Period Selector */}
-          <div className="relative">
-            <select
-              value={period}
-              onChange={(e) => setPeriod(e.target.value)}
-              className="appearance-none bg-white border border-slate-200 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-slate-700 hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="7">Last 7 Days</option>
-              <option value="30">Last 30 Days</option>
-              <option value="90">Last 90 Days</option>
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-          </div>
+        <div className="flex items-center gap-2.5 flex-wrap justify-end">
+          <FilterDropdown
+            icon={Users}
+            value={client}
+            onChange={setClient}
+            placeholder="All Clients"
+            options={[
+              { value: 'all', label: 'All Clients' },
+              ...clientOptions.map(name => ({ value: name, label: name }))
+            ]}
+          />
 
-          {/* Export Button */}
-          {/* <button */}
-          {/*   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed" */}
-          {/*   disabled={!hasData} */}
-          {/* > */}
-          {/*   <Download className="w-4 h-4" /> */}
-          {/*   Export Report */}
-          {/* </button> */}
+          <FilterDropdown
+            icon={Stethoscope}
+            value={specialty}
+            onChange={setSpecialty}
+            placeholder="All Specialties"
+            options={[
+              { value: 'all', label: 'All Specialties' },
+              ...specialtyOptions.map(name => ({ value: name, label: name }))
+            ]}
+          />
+
+          <FilterDropdown
+            icon={CalendarDays}
+            value={period}
+            onChange={setPeriod}
+            placeholder="Period"
+            minWidth="11rem"
+            options={[
+              { value: '7', label: 'Last 7 Days' },
+              { value: '30', label: 'Last 30 Days' },
+              { value: '90', label: 'Last 90 Days' }
+            ]}
+          />
         </div>
       </div>
+
+      {/* Pipeline Timing (admin only — gateway perf metrics) */}
+      <PipelineTimingPanel timing={pipelineTiming} error={pipelineError} onRetry={fetchPipelineTiming} />
 
       {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-4 mb-6">
