@@ -2,8 +2,180 @@
 
 @theme {
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-display: "Figtree", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  /* Marketing/auth editorial palette (DESIGN.md) */
+  --color-ink: #020617;
+  --color-marketing-primary: #0F172A;
+  --color-marketing-secondary: #334155;
+  --color-marketing-accent: #0369A1;
+  --color-marketing-accent-hover: #075985;
+  --color-marketing-accent-soft: #38BDF8;
+  --color-marketing-bg: #F8FAFC;
+  --color-marketing-card: #FFFFFF;
+  --color-marketing-border: #E2E8F0;
+  --color-marketing-muted: #E8ECF1;
+  --color-marketing-muted-fg: #64748B;
+  --color-marketing-success: #10B981;
+  --color-marketing-warning: #F59E0B;
+  --color-marketing-destructive: #DC2626;
 }
 
 body {
   font-family: var(--font-sans);
+}
+
+/* Marketing surface utilities — applied via the .marketing class */
+.marketing {
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+  background: var(--color-marketing-bg);
+  -webkit-font-smoothing: antialiased;
+}
+.marketing .display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+.marketing .eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.marketing .mono {
+  font-family: var(--font-mono);
+}
+
+.marketing *:focus { outline: none; }
+.marketing a:focus-visible,
+.marketing button:focus-visible,
+.marketing input:focus-visible,
+.marketing select:focus-visible,
+.marketing textarea:focus-visible {
+  outline: 3px solid rgba(3, 105, 161, 0.4);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.marketing .skip-link {
+  position: absolute; top: -48px; left: 12px;
+  background: #0F172A; color: #fff; padding: 10px 16px;
+  border-radius: 8px; font-weight: 500; font-size: 14px;
+  z-index: 60; transition: top 150ms ease-out;
+}
+.marketing .skip-link:focus { top: 12px; }
+
+@layer components {
+  .marketing .field {
+    width: 100%;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 16px;
+    color: #020617;
+    transition: border-color 150ms ease-out, box-shadow 150ms ease-out;
+  }
+  .marketing .field::placeholder { color: #94A3B8; }
+  .marketing .field:hover { border-color: #CBD5E1; }
+  .marketing .field:focus {
+    border-color: #0369A1;
+    box-shadow: 0 0 0 4px rgba(3, 105, 161, 0.12);
+  }
+  .marketing .field-error { border-color: #DC2626; }
+  .marketing .field-error:focus { box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12); }
+}
+
+.marketing .pane-bg {
+  background:
+    radial-gradient(ellipse 80% 60% at 80% 10%, rgba(56, 189, 248, 0.10), transparent 60%),
+    radial-gradient(ellipse 70% 60% at 20% 90%, rgba(3, 105, 161, 0.08), transparent 60%),
+    linear-gradient(180deg, #F4F6FA 0%, #FBFAF7 100%);
+}
+.marketing .pane-grid {
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.04) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, #000 30%, transparent 75%);
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 40%, #000 30%, transparent 75%);
+}
+.marketing .grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(15,23,42,0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15,23,42,0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 35%, transparent 75%);
+  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 35%, transparent 75%);
+}
+
+.marketing .doc-stage { perspective: 1500px; }
+.marketing .doc {
+  transform: rotate(-2.5deg) rotateY(-7deg) rotateX(2deg);
+  transform-origin: center center;
+  transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.marketing .doc:hover { transform: rotate(-1deg) rotateY(-4deg) rotateX(1deg); }
+.marketing .doc.tilt-right {
+  transform: rotate(2deg) rotateY(7deg) rotateX(2deg);
+}
+.marketing .doc.tilt-right:hover {
+  transform: rotate(1deg) rotateY(4deg) rotateX(1deg);
+}
+
+.marketing .doc-line { height: 6px; background: #E2E8F0; border-radius: 999px; }
+.marketing .doc-line.short { width: 40%; }
+.marketing .doc-line.med   { width: 70%; }
+.marketing .doc-line.long  { width: 90%; }
+
+.marketing .chip {
+  display: inline-flex; align-items: center;
+  font-family: var(--font-mono);
+  font-size: 11px; font-weight: 500;
+  background: #F4F6FA; color: #0F172A;
+  padding: 2px 6px; border-radius: 6px;
+  border: 1px solid #E2E8F0;
+}
+.marketing .chip.accent {
+  background: rgba(3, 105, 161, 0.08);
+  color: #0369A1;
+  border-color: rgba(3, 105, 161, 0.18);
+}
+.marketing .chip.success {
+  background: rgba(16, 185, 129, 0.10);
+  color: #047857;
+  border-color: rgba(16, 185, 129, 0.20);
+}
+
+.marketing .floater { animation: floatY 6s ease-in-out infinite; }
+.marketing .floater.delay-1 { animation-delay: -2s; }
+.marketing .floater.delay-2 { animation-delay: -4s; }
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-6px); }
+}
+
+.marketing .anim-rise { opacity: 0; transform: translateY(8px); animation: rise 600ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.marketing .anim-pop  { opacity: 0; transform: scale(0.9); animation: pop 500ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+@keyframes rise { to { opacity: 1; transform: translateY(0); } }
+@keyframes pop  { to { opacity: 1; transform: scale(1); } }
+
+.marketing .reveal { opacity: 0; transform: translateY(8px); transition: opacity 250ms cubic-bezier(0.2,0.8,0.2,1), transform 250ms cubic-bezier(0.2,0.8,0.2,1); }
+.marketing .reveal.in { opacity: 1; transform: translateY(0); }
+
+.marketing .shadow-cta { box-shadow: 0 1px 0 rgba(3, 105, 161, 0.20), 0 12px 24px -12px rgba(3, 105, 161, 0.30); }
+.marketing .shadow-doc { box-shadow: 0 30px 60px -30px rgba(15, 23, 42, 0.25), 0 10px 20px -10px rgba(15, 23, 42, 0.10); }
+.marketing .shadow-2 { box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 24px -8px rgba(15,23,42,0.08); }
+.marketing .shadow-3 { box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04), 0 24px 48px -24px rgba(15, 23, 42, 0.12); }
+
+@media (prefers-reduced-motion: reduce) {
+  .marketing *, .marketing ::before, .marketing ::after {
+    animation-duration: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0ms !important;
+  }
+  .marketing .doc { transform: none; }
+  .marketing .anim-rise, .marketing .anim-pop { opacity: 1; transform: none; }
+  .marketing .reveal { opacity: 1; transform: none; }
 }

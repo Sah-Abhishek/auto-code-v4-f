@@ -6,7 +6,10 @@ import ChartDetail from './pages/ChartDetail';
 import WorkQueue from './pages/WorkQueue';
 import DocumentIngestion from './pages/DocumentIngestionPage';
 import AdminLogin from './pages/AdminLogin';
-import UserLogin from './pages/UserLogin';
+import Landing from './pages/Landing';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import VerifyEmail from './pages/VerifyEmail';
 import AdminAccounts from './pages/AdminAccounts';
 import AdminAccountProfile from './pages/AdminAccountProfile';
 import Analytics from './pages/Analytics';
@@ -36,17 +39,12 @@ const UserArea = () => (
   </SidebarProvider>
 );
 
-const RootRedirect = () => {
-  const { isAuthenticated, isAdmin, isUser } = useAuth();
-  if (isAuthenticated && isAdmin) return <Navigate to="/admin/accounts" replace />;
-  if (isAuthenticated && isUser) return <Navigate to="/document-ingestion" replace />;
-  return <Navigate to="/login" replace />;
-};
-
 const AppRoutes = () => (
   <Routes>
-    <Route path="/" element={<RootRedirect />} />
-    <Route path="/login" element={<UserLogin />} />
+    <Route path="/" element={<Landing />} />
+    <Route path="/signup" element={<Signup />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/verify-email" element={<VerifyEmail />} />
     <Route path="/admin/login" element={<AdminLogin />} />
 
     <Route path="/admin/accounts" element={<RequireAdmin><AdminAccounts /></RequireAdmin>} />

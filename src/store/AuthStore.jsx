@@ -91,19 +91,42 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const userLogin = useCallback(async (code) => {
+  const signup = useCallback(async ({ name, email, password, organization, designation }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await originalFetch(`${API_BASE_URL}/auth/user/login`, {
+      const res = await originalFetch(`${API_BASE_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code })
+        body: JSON.stringify({ name, email, password, organization, designation })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || 'Signup failed');
+        return { success: false, error: data.error, code: data.code };
+      }
+      return { success: true, requiresVerification: !!data.requiresVerification, email: data.email };
+    } catch (err) {
+      setError(err.message);
+      return { success: false, error: err.message };
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const login = useCallback(async (email, password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await originalFetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || 'Login failed');
-        return { success: false, error: data.error };
+        return { success: false, error: data.error, code: data.code, email: data.email };
       }
       setToken(data.token);
       setUser(data.user);
@@ -114,6 +137,32 @@ export function AuthProvider({ children }) {
       return { success: false, error: err.message };
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const verifyEmail = useCallback(async (token) => {
+    try {
+      const res = await originalFetch(
+        `${API_BASE_URL}/auth/verify-email?token=${encodeURIComponent(token)}`
+      );
+      const data = await res.json();
+      if (!res.ok) return { success: false, error: data.error };
+      return { success: true, alreadyVerified: !!data.alreadyVerified, email: data.email };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }, []);
+
+  const resendVerification = useCallback(async (email) => {
+    try {
+      await originalFetch(`${API_BASE_URL}/auth/resend-verification`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
     }
   }, []);
 
@@ -139,7 +188,10 @@ export function AuthProvider({ children }) {
     isAdmin: user?.role === 'admin',
     isUser: user?.role === 'user',
     adminLogin,
-    userLogin,
+    signup,
+    login,
+    verifyEmail,
+    resendVerification,
     logout,
     refreshUser,
     clearError: () => setError(null),

@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Local env (Vite inlines VITE_* into the public bundle anyway, but still
+# don't commit it as a habit)
+.env
+.env.local
+.env.*.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
