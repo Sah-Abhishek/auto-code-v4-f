@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Shield, Users, BarChart3, LogOut, FileText, Loader2,
   AlertCircle, Calendar, Mail, Building, Hash, Clock, CheckCircle2,
-  Edit3, XCircle, PlusCircle, ChevronRight, Eye
+  Edit3, XCircle, PlusCircle, ChevronRight, Eye, MessageSquare
 } from 'lucide-react';
 import { useAuth } from '../store/AuthStore';
 
@@ -112,6 +112,9 @@ const AdminAccountProfile = () => {
           <div className="flex items-center gap-2">
             <Link to="/admin/accounts" className="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg">
               <Users className="w-4 h-4" /> Accounts
+            </Link>
+            <Link to="/admin/messages" className="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg">
+              <MessageSquare className="w-4 h-4" /> Messages
             </Link>
             <Link to="/admin/analytics" className="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg">
               <BarChart3 className="w-4 h-4" /> Analytics

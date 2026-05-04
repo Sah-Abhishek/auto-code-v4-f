@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
   ArrowLeft, FileText, AlertTriangle, Clock, Search,
   Check, X, Edit3, RotateCcw, Plus, ChevronLeft,
@@ -9,6 +9,7 @@ import {
   ChevronDown, FileCheck, Heart, Pill, Thermometer, User, Calendar,
   MapPin, Building, UserCheck, ClipboardList, Zap, Bell
 } from 'lucide-react';
+import ChartMessages from '../components/ChartMessages';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
 
@@ -537,6 +538,7 @@ const ReviewModal = ({ isOpen, onClose, onSubmit, workingCodes, submitting }) =>
 const ChartDetail = ({ adminView = false }) => {
   const { chartNumber } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const backTarget = adminView ? -1 : '/work-queue';
   const backLabel = adminView ? 'Back' : 'Back to Work Queue';
   const [chart, setChart] = useState(null);
@@ -546,6 +548,7 @@ const ChartDetail = ({ adminView = false }) => {
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showFeedbackDropdown, setShowFeedbackDropdown] = useState(false);
   const feedbackDropdownRef = useRef(null);
+  const [showMessages, setShowMessages] = useState(!!location?.state?.openMessages);
 
   // Close feedback dropdown when clicking outside
   useEffect(() => {
@@ -1114,10 +1117,19 @@ const ChartDetail = ({ adminView = false }) => {
               chart?.reviewStatus === 'in_review' ? '◉ In Review' : '✓ Submitted'}
           </span>
 
+          <button
+            onClick={() => setShowMessages(true)}
+            className="px-3 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 hover:border-slate-300 flex items-center gap-2 transition-colors cursor-pointer"
+            title={adminView ? 'View conversation with user' : 'Message admin about this chart'}
+          >
+            <MessageSquare className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-medium">{adminView ? 'Messages' : 'Message admin'}</span>
+          </button>
+
           {!isReadOnly && (
             <button
               onClick={handleReviewClick}
-              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all"
+              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center gap-2 shadow-lg shadow-emerald-200 transition-all cursor-pointer"
             >
               <FileCheck className="w-4 h-4" />
               Review & Submit
@@ -1125,6 +1137,13 @@ const ChartDetail = ({ adminView = false }) => {
           )}
         </div>
       </header>
+
+      <ChartMessages
+        chartNumber={chartNumber}
+        viewerRole={adminView ? 'admin' : 'user'}
+        isOpen={showMessages}
+        onClose={() => setShowMessages(false)}
+      />
 
       {/* Main Content - 3 Columns */}
       <div className="flex-1 flex overflow-hidden">

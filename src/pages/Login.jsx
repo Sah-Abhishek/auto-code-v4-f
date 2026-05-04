@@ -121,7 +121,7 @@ export default function Login() {
                       : (
                         <>
                           {' '}
-                          <button type="button" onClick={handleResend} className="underline font-medium hover:no-underline">
+                          <button type="button" onClick={handleResend} className="underline font-medium hover:no-underline cursor-pointer">
                             Resend the email
                           </button>.
                         </>

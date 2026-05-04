@@ -119,7 +119,7 @@ export default function Signup() {
                   <button
                     type="button"
                     onClick={handleResend}
-                    className="inline-flex items-center justify-center gap-2 border border-[#E2E8F0] text-[#0F172A] font-medium px-5 py-3 rounded-md hover:bg-[#F1F5F9] transition-colors"
+                    className="inline-flex items-center justify-center gap-2 border border-[#E2E8F0] text-[#0F172A] font-medium px-5 py-3 rounded-md hover:bg-[#F1F5F9] transition-colors cursor-pointer"
                   >
                     {resentFor === email.trim() ? <><Check className="w-4 h-4 text-emerald-600" /> Sent again</> : 'Resend the email'}
                   </button>

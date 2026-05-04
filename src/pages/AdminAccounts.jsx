@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Users, Ban, Search, Shield, Loader2,
   AlertCircle, CheckCircle2, X, FileText, LogOut,
-  BarChart3, TrendingUp, Mail, Eye, ShieldCheck, MailCheck
+  BarChart3, TrendingUp, Mail, Eye, ShieldCheck, MailCheck, MessageSquare
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthStore';
@@ -122,6 +122,12 @@ const AdminAccounts = () => {
               className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-900 bg-slate-100 rounded-lg"
             >
               <Users className="w-4 h-4" /> Accounts
+            </Link>
+            <Link
+              to="/admin/messages"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+            >
+              <MessageSquare className="w-4 h-4" /> Messages
             </Link>
             <Link
               to="/admin/analytics"
