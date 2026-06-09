@@ -179,3 +179,14 @@ body {
   .marketing .anim-rise, .marketing .anim-pop { opacity: 1; transform: none; }
   .marketing .reveal { opacity: 1; transform: none; }
 }
+
+@keyframes chatBubbleIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.chat-bubble-in {
+  animation: chatBubbleIn 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .chat-bubble-in { animation: none; opacity: 1; transform: none; }
+}

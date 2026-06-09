@@ -91,14 +91,14 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const signup = useCallback(async ({ name, email, password, organization, designation }) => {
+  const signup = useCallback(async ({ name, email, password, organization, designation, phone }) => {
     setLoading(true);
     setError(null);
     try {
       const res = await originalFetch(`${API_BASE_URL}/auth/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, organization, designation })
+        body: JSON.stringify({ name, email, password, organization, designation, phone })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -166,6 +166,35 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const forgotPassword = useCallback(async (email) => {
+    try {
+      await originalFetch(`${API_BASE_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      // Backend always responds success to avoid leaking which emails exist.
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }, []);
+
+  const resetPassword = useCallback(async (token, password) => {
+    try {
+      const res = await originalFetch(`${API_BASE_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password })
+      });
+      const data = await res.json();
+      if (!res.ok) return { success: false, error: data.error };
+      return { success: true, email: data.email };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }, []);
+
   const refreshUser = useCallback(async () => {
     if (!currentToken) return;
     try {
@@ -192,6 +221,8 @@ export function AuthProvider({ children }) {
     login,
     verifyEmail,
     resendVerification,
+    forgotPassword,
+    resetPassword,
     logout,
     refreshUser,
     clearError: () => setError(null),

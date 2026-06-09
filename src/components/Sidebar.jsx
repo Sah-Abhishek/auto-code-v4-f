@@ -95,7 +95,7 @@ const Sidebar = () => {
           <Stethoscope className="w-5 h-5 text-white" />
         </div>
         {!isCollapsed && (
-          <span className="text-lg font-bold text-slate-900 whitespace-nowrap">MedExtractor</span>
+          <span className="text-lg font-bold text-slate-900 whitespace-nowrap">Nxtcodeai</span>
         )}
       </div>
 

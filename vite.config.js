@@ -11,7 +11,7 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 9010,
-    allowedHosts: ['llm.icdcore.com'],
+    allowedHosts: ['llm.icdcore.com', 'demo.nxtcodeai.com'],
 
     // 🔹 ONLY for local development (npm run dev)
     proxy: {

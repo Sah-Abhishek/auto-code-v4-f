@@ -10,6 +10,8 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import VerifyEmail from './pages/VerifyEmail';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import AdminAccounts from './pages/AdminAccounts';
 import AdminAccountProfile from './pages/AdminAccountProfile';
 import AdminMessages from './pages/AdminMessages';
@@ -46,6 +48,8 @@ const AppRoutes = () => (
     <Route path="/signup" element={<Signup />} />
     <Route path="/login" element={<Login />} />
     <Route path="/verify-email" element={<VerifyEmail />} />
+    <Route path="/forgot-password" element={<ForgotPassword />} />
+    <Route path="/reset-password" element={<ResetPassword />} />
     <Route path="/admin/login" element={<AdminLogin />} />
 
     <Route path="/admin/accounts" element={<RequireAdmin><AdminAccounts /></RequireAdmin>} />

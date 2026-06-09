@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   Users, Ban, Search, Shield, Loader2,
   AlertCircle, CheckCircle2, X, FileText, LogOut,
-  BarChart3, TrendingUp, Mail, Eye, ShieldCheck, MailCheck, MessageSquare
+  BarChart3, TrendingUp, Mail, Eye, ShieldCheck, MailCheck, MessageSquare,
+  Trash2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthStore';
@@ -85,6 +86,29 @@ const AdminAccounts = () => {
         return;
       }
       setSuccess(`Access restored for ${a.userName || a.email}.`);
+      load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyCode(null);
+    }
+  };
+
+  const handleDelete = async (a) => {
+    const label = a.userName || a.email || a.code;
+    const chartNote = a.chartCount > 0
+      ? `\n\nNote: ${a.chartCount} chart(s) owned by this account will remain in the database (orphaned).`
+      : '';
+    if (!confirm(`Permanently delete account for ${label}?${chartNote}\n\nThis cannot be undone.`)) return;
+    setError(''); setSuccess(''); setBusyCode(a.code);
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/accounts/${a.code}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Delete failed');
+        return;
+      }
+      setSuccess(`Account deleted for ${label}.`);
       load();
     } catch (err) {
       setError(err.message);
@@ -323,6 +347,16 @@ const AdminAccounts = () => {
                               Revoke
                             </button>
                           )}
+                          <button
+                            onClick={() => handleDelete(a)}
+                            disabled={busyCode === a.code}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-red-700 hover:bg-red-50 rounded-lg disabled:opacity-60"
+                          >
+                            {busyCode === a.code
+                              ? <Loader2 className="w-4 h-4 animate-spin" />
+                              : <Trash2 className="w-4 h-4" />}
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>

@@ -56,9 +56,9 @@ export default function Landing() {
 
       <header ref={navRef} className="sticky top-0 z-40 bg-[#F8FAFC]/80 backdrop-blur border-b border-transparent">
         <Container className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-baseline gap-0.5" aria-label="MedCode AI home">
-            <span className="display text-xl font-semibold text-[#0F172A]">MedCode</span>
-            <span className="text-[0.95rem] font-semibold text-[#0369A1]">.AI</span>
+          <Link to="/" className="flex items-baseline gap-0.5" aria-label="Nxtcodeai home">
+            <span className="display text-xl font-semibold text-[#0F172A]">Nxtcode</span>
+            <span className="text-[0.95rem] font-semibold text-[#0369A1]">ai</span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#334155]" aria-label="Primary">
             <a href="#product" className="hover:text-[#0F172A] transition-colors">Product</a>
@@ -107,7 +107,7 @@ export default function Landing() {
                 <span className="text-[#334155]">with the model's reasoning.</span>
               </h1>
               <p className="text-lg md:text-xl text-[#334155] leading-relaxed mt-6 max-w-[55ch] reveal">
-                Upload a chart — ED notes, labs, radiology, or discharge summary — and MedCode predicts ICD-10, E&amp;M, CPT, and modifier codes. Every prediction comes with the reasoning behind it, so you can decide whether to accept, modify, or reject.
+                Upload a chart — ED notes, labs, radiology, or discharge summary — and Nxtcodeai predicts ICD-10, E&amp;M, CPT, and modifier codes. Every prediction comes with the reasoning behind it, so you can decide whether to accept, modify, or reject.
               </p>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-7 mt-9 reveal">
                 <Link to="/signup" className="inline-flex items-center gap-2 bg-[#0369A1] hover:bg-[#075985] text-white text-base font-medium px-6 py-3.5 rounded-md shadow-cta transition-colors">
@@ -374,8 +374,8 @@ export default function Landing() {
         <Container className="py-14 grid md:grid-cols-12 gap-10 items-start">
           <div className="md:col-span-6">
             <Link to="/" className="flex items-baseline gap-0.5">
-              <span className="display text-2xl font-semibold text-white">MedCode</span>
-              <span className="text-base font-semibold text-[#38BDF8]">.AI</span>
+              <span className="display text-2xl font-semibold text-white">Nxtcode</span>
+              <span className="text-base font-semibold text-[#38BDF8]">ai</span>
             </Link>
             <p className="text-sm leading-relaxed mt-4 max-w-md">
               A trial of our medical coding prediction AI. Create a free account, upload a chart, read the reasoning, and decide for yourself. 5 free uploads.
@@ -394,13 +394,13 @@ export default function Landing() {
             <ul className="mt-4 space-y-2.5 text-sm">
               <li><Link to="/signup" className="hover:text-white transition-colors">Create account</Link></li>
               <li><Link to="/login" className="hover:text-white transition-colors">Sign in</Link></li>
-              <li><a href="mailto:hello@medcode.ai" className="hover:text-white transition-colors">hello@medcode.ai</a></li>
+              <li><a href="mailto:AKVerma@valerionhealth.us" className="hover:text-white transition-colors">AKVerma@valerionhealth.us</a></li>
             </ul>
           </div>
         </Container>
         <div className="border-t border-white/5">
           <Container className="py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-white/40">
-            <span>© 2026 MedCode AI · Trial site</span>
+            <span>© 2026 Nxtcodeai · Trial site</span>
             <div className="flex items-center gap-5">
               <a href="#" className="hover:text-white transition-colors">Privacy</a>
               <a href="#" className="hover:text-white transition-colors">Terms</a>

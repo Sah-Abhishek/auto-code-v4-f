@@ -37,9 +37,9 @@ export default function VerifyEmail() {
     <div className="marketing min-h-screen flex flex-col">
       <header className="border-b border-[#E2E8F0] bg-[#F8FAFC]/80 backdrop-blur sticky top-0 z-30">
         <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-16">
-          <Link to="/" className="flex items-baseline gap-0.5" aria-label="MedCode AI home">
-            <span className="display text-xl font-semibold text-[#0F172A]">MedCode</span>
-            <span className="text-[0.95rem] font-semibold text-[#0369A1]">.AI</span>
+          <Link to="/" className="flex items-baseline gap-0.5" aria-label="Nxtcodeai home">
+            <span className="display text-xl font-semibold text-[#0F172A]">Nxtcode</span>
+            <span className="text-[0.95rem] font-semibold text-[#0369A1]">ai</span>
           </Link>
         </div>
       </header>

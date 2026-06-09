@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FileText, Image, ClipboardPaste, ChevronDown, Send, X, Plus,
-  Stethoscope, FlaskConical, ScanLine, ClipboardCheck, FileImage, File as FileIcon,
+  Stethoscope, FlaskConical, ScanLine, ClipboardCheck, FileImage, File as FileIcon, Building2,
   Loader2, CheckCircle2, AlertCircle, Layers, Trash2
 } from 'lucide-react';
 
@@ -15,7 +15,7 @@ const DocumentIngestion = () => {
     mrn: '',
     chartNumber: '',
     facility: '',
-    specialty: 'ED (Emergency Department)',
+    specialty: 'ED Facility',
     dateOfService: '',
     provider: ''
   });
@@ -46,25 +46,20 @@ const DocumentIngestion = () => {
 
   const facilities = ["St. Mary's Medical Center", 'Community Medical', 'Regional Hospital', 'Metro General', 'University Health'];
   const specialties = [
-    'ED (Emergency Department)',
-    'INO (Insurance)',
-    'WHC (Women Health Care)',
-    'SDS (Same Day Surgery)',
-    'CLI (Clinic)',
-    'Office',
-    'IP (Inpatient)',
-    'ED (Emergency Department)',
-    'SDS (Same Day Surgery)',
-    'IP (Inpatient)',
-    'OP (Outpatient)',
-    'LAB (Laboratory)',
-    'RAD (Radiology)',
-    'EDITS (Edits)',
-    'ANALYSIS (Analysis)',
-    'TRP (Trip)',
-    'TRN (Transaction)',
-    'TC (Treatment Code)',
-    'TRPCL (Trip Claim)'
+    'ED Facility',
+    'EM',
+    'SDS',
+    'General Surgery',
+    'Wound Care',
+    'ASC',
+    'Ancillary',
+    'IP-DRG',
+    'HCC',
+    'PT/OT',
+    'Pathology',
+    'Radiology',
+    'Interventional Radiology',
+    'Denial/ Edits'
   ];
 
   const getTabColor = (tabId, type = 'bg') => {
@@ -762,30 +757,32 @@ const DocumentIngestion = () => {
 
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-slate-700">Facility</label>
-              <div className="relative">
+              <div className="relative group">
+                <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none z-10" />
                 <select
                   value={formData.facility}
                   onChange={(e) => setFormData(prev => ({ ...prev, facility: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none appearance-none bg-white"
+                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium shadow-sm hover:border-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none appearance-none cursor-pointer transition-colors ${formData.facility ? 'text-slate-900' : 'text-slate-400'}`}
                 >
-                  <option value="">Select facility</option>
-                  {facilities.map(f => <option key={f} value={f}>{f}</option>)}
+                  <option value="" disabled hidden>Select facility</option>
+                  {facilities.map(f => <option key={f} value={f} className="text-slate-900">{f}</option>)}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none" />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-slate-700">Specialty</label>
-              <div className="relative">
+              <div className="relative group">
+                <Stethoscope className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none z-10" />
                 <select
                   value={formData.specialty}
                   onChange={(e) => setFormData(prev => ({ ...prev, specialty: e.target.value }))}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none appearance-none bg-white"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium text-slate-900 shadow-sm hover:border-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none appearance-none cursor-pointer transition-colors"
                 >
-                  {specialties.map(s => <option key={s} value={s}>{s}</option>)}
+                  {specialties.map(s => <option key={s} value={s} className="text-slate-900">{s}</option>)}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none" />
               </div>
             </div>
 

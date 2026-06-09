@@ -71,7 +71,7 @@ const LoginPage = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl shadow-blue-500/25 mb-4">
             <Stethoscope className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">MedCode AI</h1>
+          <h1 className="text-3xl font-bold text-white mb-2">Nxtcodeai</h1>
           <p className="text-slate-400">Medical Coding Assistant</p>
         </div>
 

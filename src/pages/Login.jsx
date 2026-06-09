@@ -14,6 +14,7 @@ export default function Login() {
   const { login, resendVerification, isAuthenticated, isUser, isAdmin } = useAuth();
 
   const verifiedFlag = params.get('verified') === '1';
+  const resetFlag = params.get('reset') === '1';
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -70,9 +71,9 @@ export default function Login() {
 
       <header className="border-b border-[#E2E8F0] bg-[#F8FAFC]/80 backdrop-blur sticky top-0 z-30">
         <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-16">
-          <Link to="/" className="flex items-baseline gap-0.5" aria-label="MedCode AI home">
-            <span className="display text-xl font-semibold text-[#0F172A]">MedCode</span>
-            <span className="text-[0.95rem] font-semibold text-[#0369A1]">.AI</span>
+          <Link to="/" className="flex items-baseline gap-0.5" aria-label="Nxtcodeai home">
+            <span className="display text-xl font-semibold text-[#0F172A]">Nxtcode</span>
+            <span className="text-[0.95rem] font-semibold text-[#0369A1]">ai</span>
           </Link>
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-[#334155] hover:text-[#0F172A] transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -99,6 +100,13 @@ export default function Login() {
               <div className="mt-6 flex items-start gap-3 px-4 py-3 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
                 <Check className="w-4 h-4 mt-0.5 shrink-0" />
                 <span>Email verified. You can sign in now.</span>
+              </div>
+            )}
+
+            {resetFlag && (
+              <div className="mt-6 flex items-start gap-3 px-4 py-3 rounded-md bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm">
+                <Check className="w-4 h-4 mt-0.5 shrink-0" />
+                <span>Password updated. Sign in with your new password.</span>
               </div>
             )}
 
@@ -157,6 +165,9 @@ export default function Login() {
               <div>
                 <div className="flex items-center justify-between mb-1.5">
                   <label htmlFor="password" className="block text-sm font-medium text-[#020617]">Password</label>
+                  <Link to="/forgot-password" className="text-sm text-[#0369A1] hover:text-[#075985] font-medium">
+                    Forgot password?
+                  </Link>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748B] pointer-events-none" />
@@ -297,7 +308,7 @@ export default function Login() {
 
       <footer className="border-t border-[#E2E8F0] bg-[#F8FAFC]">
         <div className="max-w-[1200px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-[#64748B]">
-          <span>© 2026 MedCode AI · Trial site</span>
+          <span>© 2026 Nxtcodeai · Trial site</span>
           <div className="flex items-center gap-5">
             <a href="#" className="hover:text-[#334155]">Privacy</a>
             <a href="#" className="hover:text-[#334155]">Terms</a>

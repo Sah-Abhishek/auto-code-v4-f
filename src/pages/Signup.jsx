@@ -2,11 +2,40 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, ArrowRight, User, Mail, Lock, Eye, EyeOff,
-  Gift, AlertCircle, Loader2, Check, MailCheck, Building2, Briefcase
+  Gift, AlertCircle, Loader2, Check, MailCheck, Building2, Briefcase, Phone
 } from 'lucide-react';
 import { useAuth } from '../store/AuthStore';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_DIGITS_RE = /^\d{6,15}$/;
+
+const COUNTRY_CODES = [
+  { code: '+91', label: 'IN +91' },
+  { code: '+1',  label: 'US +1'  },
+  { code: '+44', label: 'UK +44' },
+  { code: '+61', label: 'AU +61' },
+  { code: '+971', label: 'AE +971' },
+  { code: '+966', label: 'SA +966' },
+  { code: '+65', label: 'SG +65' },
+  { code: '+60', label: 'MY +60' },
+  { code: '+63', label: 'PH +63' },
+  { code: '+66', label: 'TH +66' },
+  { code: '+81', label: 'JP +81' },
+  { code: '+82', label: 'KR +82' },
+  { code: '+86', label: 'CN +86' },
+  { code: '+49', label: 'DE +49' },
+  { code: '+33', label: 'FR +33' },
+  { code: '+39', label: 'IT +39' },
+  { code: '+34', label: 'ES +34' },
+  { code: '+31', label: 'NL +31' },
+  { code: '+46', label: 'SE +46' },
+  { code: '+41', label: 'CH +41' },
+  { code: '+353', label: 'IE +353' },
+  { code: '+27', label: 'ZA +27' },
+  { code: '+55', label: 'BR +55' },
+  { code: '+52', label: 'MX +52' },
+  { code: '+64', label: 'NZ +64' }
+];
 const STRENGTH_LABELS = ['Strength', 'Weak', 'Okay', 'Good', 'Strong'];
 const STRENGTH_BAR_BG = ['bg-[#E2E8F0]', 'bg-red-500', 'bg-amber-500', 'bg-emerald-500', 'bg-emerald-500'];
 
@@ -27,6 +56,8 @@ export default function Signup() {
   const [email, setEmail] = useState('');
   const [organization, setOrganization] = useState('');
   const [designation, setDesignation] = useState('');
+  const [countryCode, setCountryCode] = useState('+91');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [terms, setTerms] = useState(false);
   const [showPw, setShowPw] = useState(false);
@@ -45,10 +76,12 @@ export default function Signup() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const phoneDigits = phone.replace(/[\s-]/g, '');
     const next = {};
     if (!name.trim()) next.name = 'Tell us your name.';
     if (!EMAIL_RE.test(email.trim())) next.email = "That doesn't look like a valid email.";
     if (!organization.trim()) next.organization = 'Tell us where you work.';
+    if (!PHONE_DIGITS_RE.test(phoneDigits)) next.phone = 'Enter a valid phone number (digits only).';
     if (password.length < 8) next.password = 'Password must be at least 8 characters.';
     if (!terms) next.terms = 'Please accept the Terms and Privacy Policy.';
     setErrors(next);
@@ -62,7 +95,8 @@ export default function Signup() {
       email: email.trim(),
       password,
       organization: organization.trim(),
-      designation: designation.trim()
+      designation: designation.trim(),
+      phone: `${countryCode}${phoneDigits}`
     });
     if (result.success) {
       setSubmitState('sent');
@@ -87,9 +121,9 @@ export default function Signup() {
 
       <header className="border-b border-[#E2E8F0] bg-[#F8FAFC]/80 backdrop-blur sticky top-0 z-30">
         <div className="max-w-[1200px] mx-auto px-6 flex items-center justify-between h-16">
-          <Link to="/" className="flex items-baseline gap-0.5" aria-label="MedCode AI home">
-            <span className="display text-xl font-semibold text-[#0F172A]">MedCode</span>
-            <span className="text-[0.95rem] font-semibold text-[#0369A1]">.AI</span>
+          <Link to="/" className="flex items-baseline gap-0.5" aria-label="Nxtcodeai home">
+            <span className="display text-xl font-semibold text-[#0F172A]">Nxtcode</span>
+            <span className="text-[0.95rem] font-semibold text-[#0369A1]">ai</span>
           </Link>
           <Link to="/" className="inline-flex items-center gap-1.5 text-sm font-medium text-[#334155] hover:text-[#0F172A] transition-colors">
             <ArrowLeft className="w-4 h-4" />
@@ -214,7 +248,7 @@ export default function Signup() {
                           required
                           value={organization}
                           onChange={(e) => { setOrganization(e.target.value); setFieldError('organization', null); }}
-                          placeholder="St. Mary's Health"
+                          placeholder="ABC Hospital"
                           className={`field pl-10 ${errors.organization ? 'field-error' : ''}`}
                         />
                       </div>
@@ -242,6 +276,40 @@ export default function Signup() {
                         />
                       </div>
                     </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="phone" className="block text-sm font-medium text-[#020617] mb-1.5">Phone number</label>
+                    <div className="flex gap-2">
+                      <select
+                        aria-label="Country code"
+                        value={countryCode}
+                        onChange={(e) => setCountryCode(e.target.value)}
+                        className="field w-28 shrink-0"
+                      >
+                        {COUNTRY_CODES.map(c => (
+                          <option key={c.code} value={c.code}>{c.label}</option>
+                        ))}
+                      </select>
+                      <div className="relative flex-1">
+                        <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748B] pointer-events-none" />
+                        <input
+                          id="phone"
+                          type="tel"
+                          autoComplete="tel-national"
+                          required
+                          value={phone}
+                          onChange={(e) => { setPhone(e.target.value); setFieldError('phone', null); }}
+                          placeholder="xxxxx xxxxx"
+                          className={`field pl-10 ${errors.phone ? 'field-error' : ''}`}
+                        />
+                      </div>
+                    </div>
+                    {errors.phone && (
+                      <p className="mt-1.5 text-sm text-red-600 flex items-center gap-1.5">
+                        <AlertCircle className="w-3.5 h-3.5" /> {errors.phone}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -303,6 +371,13 @@ export default function Signup() {
                       <AlertCircle className="w-3.5 h-3.5" /> {errors.terms}
                     </p>
                   )}
+
+                  <div className="flex items-start gap-2.5 rounded-md border border-[#FDE68A] bg-[#FFFBEB] px-3.5 py-3 text-xs leading-relaxed text-[#92400E]">
+                    <AlertCircle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <p>
+                      Free accounts are strictly intended for testing and evaluation purposes only. Do not upload or share any Protected Health Information (PHI) or sensitive confidential data. All data uploaded under a free account will be automatically deleted after <strong>5 days</strong> and cannot be recovered thereafter.
+                    </p>
+                  </div>
 
                   <button
                     type="submit"
@@ -422,7 +497,7 @@ export default function Signup() {
 
       <footer className="border-t border-[#E2E8F0] bg-[#F8FAFC]">
         <div className="max-w-[1200px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs text-[#64748B]">
-          <span>© 2026 MedCode AI · Trial site</span>
+          <span>© 2026 Nxtcodeai · Trial site</span>
           <div className="flex items-center gap-5">
             <a href="#" className="hover:text-[#334155]">Privacy</a>
             <a href="#" className="hover:text-[#334155]">Terms</a>

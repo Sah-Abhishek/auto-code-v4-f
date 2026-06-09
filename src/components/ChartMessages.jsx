@@ -9,6 +9,16 @@ function formatTime(iso) {
   return d.toLocaleString([], { dateStyle: 'short', timeStyle: 'short' });
 }
 
+function buildWelcomeMessage() {
+  return {
+    id: `welcome-${Date.now()}`,
+    sender_role: 'admin',
+    sender_name: 'Admin',
+    body: 'Welcome aboard, let me know if you have any questions about the chart?',
+    created_at: new Date().toISOString()
+  };
+}
+
 export default function ChartMessages({ chartNumber, viewerRole, isOpen, onClose, onUnreadChange }) {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -19,20 +29,26 @@ export default function ChartMessages({ chartNumber, viewerRole, isOpen, onClose
 
   const load = useCallback(async () => {
     if (!chartNumber) return;
+    // Non-admins get a synthetic welcome bubble seeded in the same render
+    // batch as setLoading(true), so the panel paints with a message already
+    // in place and the "Loading messages…" spinner never matches.
+    const welcome = viewerRole !== 'admin' ? buildWelcomeMessage() : null;
+    if (welcome) setMessages([welcome]);
     setLoading(true);
     setError(null);
     try {
       const res = await fetch(`${API_BASE_URL}/charts/${chartNumber}/messages`);
       const data = await res.json();
       if (!data.success) throw new Error(data.error || 'Failed to load messages');
-      setMessages(data.messages || []);
+      const serverMessages = data.messages || [];
+      setMessages(serverMessages.length > 0 ? serverMessages : (welcome ? [welcome] : []));
       if (onUnreadChange) onUnreadChange(0);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [chartNumber, onUnreadChange]);
+  }, [chartNumber, viewerRole, onUnreadChange]);
 
   useEffect(() => {
     if (isOpen) load();
@@ -118,7 +134,7 @@ export default function ChartMessages({ chartNumber, viewerRole, isOpen, onClose
             messages.map((m) => {
               const mine = m.sender_role === viewerRole;
               return (
-                <div key={m.id} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                <div key={m.id} className={`chat-bubble-in flex ${mine ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
                     mine
                       ? 'bg-blue-600 text-white rounded-br-md'
