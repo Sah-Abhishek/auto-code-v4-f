@@ -1,4 +1,4 @@
-import { useState, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
   ListTodo,
@@ -30,7 +30,20 @@ export const SidebarProvider = ({ children }) => {
 
 const Sidebar = () => {
   const { isCollapsed, setIsCollapsed } = useSidebar();
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
+
+  // Keep the stored user (runs remaining, limits) in sync with the server:
+  // admin changes to limits show up on refresh/focus without re-logging in.
+  useEffect(() => {
+    refreshUser();
+    const onFocus = () => refreshUser();
+    window.addEventListener('focus', onFocus);
+    const interval = setInterval(refreshUser, 60_000);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      clearInterval(interval);
+    };
+  }, [refreshUser]);
 
   const navItems = [
     { id: 'document-ingestion', label: 'Process Documents', icon: FileInput, path: '/document-ingestion' },
