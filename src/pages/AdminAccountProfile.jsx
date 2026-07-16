@@ -3,7 +3,8 @@ import { Link, useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Shield, Users, BarChart3, LogOut, FileText, Loader2,
   AlertCircle, Calendar, Mail, Building, Hash, Clock, CheckCircle2,
-  Edit3, XCircle, PlusCircle, ChevronRight, Eye, MessageSquare
+  Edit3, XCircle, PlusCircle, ChevronRight, Eye, MessageSquare,
+  EyeOff, Minus, Plus
 } from 'lucide-react';
 import { useAuth } from '../store/AuthStore';
 
@@ -71,6 +72,8 @@ const AdminAccountProfile = () => {
   const [error, setError] = useState('');
   const [tab, setTab] = useState('charts');
   const [openCategory, setOpenCategory] = useState(null);
+  const [busyChart, setBusyChart] = useState(null);
+  const [savingProcess, setSavingProcess] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -95,6 +98,54 @@ const AdminAccountProfile = () => {
   }, [code]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Admin: bump the account's processing-run counters up or down
+  const adjustProcess = async (field, delta) => {
+    if (!account || savingProcess) return;
+    const current = field === 'processLimit' ? account.processLimit : account.processUsed;
+    const next = current + delta;
+    if (next < 0) return;
+    setSavingProcess(true);
+    setError('');
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/accounts/${code}/process`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [field]: next })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Update failed');
+      setAccount(prev => ({
+        ...prev,
+        processLimit: data.account.processLimit,
+        processUsed: data.account.processUsed,
+        processRemaining: data.account.processRemaining
+      }));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingProcess(false);
+    }
+  };
+
+  // Admin: hide/unhide a processed chart from the user's account
+  const toggleHidden = async (chart) => {
+    setBusyChart(chart.chartNumber);
+    setError('');
+    try {
+      const action = chart.hidden ? 'unhide' : 'hide';
+      const res = await fetch(`${API_BASE_URL}/admin/charts/${chart.chartNumber}/${action}`, { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Update failed');
+      setCharts(prev => prev.map(c =>
+        c.chartNumber === chart.chartNumber ? { ...c, hidden: data.hidden } : c
+      ));
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyChart(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -172,6 +223,50 @@ const AdminAccountProfile = () => {
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
                     <p className="text-xs text-slate-500">Processing</p>
                     <p className="text-xl font-semibold text-slate-900">{account.processUsed} <span className="text-slate-400 text-sm font-normal">/ {account.processLimit}</span></p>
+                    <div className="mt-2 space-y-1.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-slate-500">Used</span>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => adjustProcess('processUsed', -1)}
+                            disabled={savingProcess || account.processUsed <= 0}
+                            title="Decrease runs used"
+                            className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => adjustProcess('processUsed', 1)}
+                            disabled={savingProcess}
+                            title="Increase runs used"
+                            className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[11px] text-slate-500">Limit</span>
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            onClick={() => adjustProcess('processLimit', -1)}
+                            disabled={savingProcess || account.processLimit <= 0}
+                            title="Decrease run limit"
+                            className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => adjustProcess('processLimit', 1)}
+                            disabled={savingProcess}
+                            title="Increase run limit"
+                            className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
                     <p className="text-xs text-slate-500">Corrections</p>
@@ -219,9 +314,16 @@ const AdminAccountProfile = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-100">
                           {charts.map(c => (
-                            <tr key={c.chartNumber} className="hover:bg-slate-50">
+                            <tr key={c.chartNumber} className={`hover:bg-slate-50 ${c.hidden ? 'opacity-60' : ''}`}>
                               <td className="px-6 py-3">
-                                <p className="font-medium text-slate-900">{c.chartNumber}</p>
+                                <div className="flex items-center gap-2">
+                                  <p className="font-medium text-slate-900">{c.chartNumber}</p>
+                                  {c.hidden && (
+                                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 ring-1 ring-slate-300">
+                                      <EyeOff className="w-3 h-3" /> hidden
+                                    </span>
+                                  )}
+                                </div>
                                 <p className="text-xs text-slate-500">MRN {c.mrn || '—'}</p>
                               </td>
                               <td className="px-6 py-3">
@@ -239,13 +341,30 @@ const AdminAccountProfile = () => {
                                 {new Date(c.createdAt).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-3 text-right">
-                                <Link
-                                  to={`/admin/charts/${c.chartNumber}`}
-                                  state={{ from: `/admin/accounts/${code}` }}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-50 rounded-lg"
-                                >
-                                  <Eye className="w-4 h-4" /> Open
-                                </Link>
+                                <div className="inline-flex items-center gap-1">
+                                  <Link
+                                    to={`/admin/charts/${c.chartNumber}`}
+                                    state={{ from: `/admin/accounts/${code}` }}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm text-blue-700 hover:bg-blue-50 rounded-lg"
+                                  >
+                                    <Eye className="w-4 h-4" /> Open
+                                  </Link>
+                                  <button
+                                    onClick={() => toggleHidden(c)}
+                                    disabled={busyChart === c.chartNumber}
+                                    title={c.hidden ? 'Show this chart to the user again' : 'Hide this chart from the user'}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg disabled:opacity-60 ${
+                                      c.hidden
+                                        ? 'text-emerald-700 hover:bg-emerald-50'
+                                        : 'text-slate-600 hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    {busyChart === c.chartNumber
+                                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                                      : c.hidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                                    {c.hidden ? 'Unhide' : 'Hide'}
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           ))}

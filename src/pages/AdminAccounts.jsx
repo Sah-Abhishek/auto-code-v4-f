@@ -3,7 +3,7 @@ import {
   Users, Ban, Search, Shield, Loader2,
   AlertCircle, CheckCircle2, X, FileText, LogOut,
   BarChart3, TrendingUp, Mail, Eye, ShieldCheck, MailCheck, MessageSquare,
-  Trash2
+  Trash2, Minus, Plus
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthStore';
@@ -110,6 +110,45 @@ const AdminAccounts = () => {
       }
       setSuccess(`Account deleted for ${label}.`);
       load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusyCode(null);
+    }
+  };
+
+  // Bump an account's processing-run limit up or down without a full reload
+  const handleAdjustLimit = async (a, delta) => {
+    const next = a.processLimit + delta;
+    if (next < 0) return;
+    setError(''); setBusyCode(a.code);
+    try {
+      const res = await fetch(`${API_BASE_URL}/admin/accounts/${a.code}/process`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ processLimit: next })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setError(data.error || 'Update failed');
+        return;
+      }
+      // Recompute status the same way the backend does
+      const computeStatus = (acc, used, limit) => {
+        if (acc.revoked) return 'revoked';
+        if (acc.validUntil && new Date(acc.validUntil) < new Date()) return 'expired';
+        if (used >= limit) return 'exhausted';
+        return 'active';
+      };
+      setAccounts(prev => prev.map(acc => acc.code === a.code
+        ? {
+            ...acc,
+            processLimit: data.account.processLimit,
+            processUsed: data.account.processUsed,
+            processRemaining: data.account.processRemaining,
+            status: computeStatus(acc, data.account.processUsed, data.account.processLimit)
+          }
+        : acc));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -297,9 +336,29 @@ const AdminAccounts = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-sm font-medium text-slate-900">
-                          {a.processUsed} / {a.processLimit}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-slate-900">
+                            {a.processUsed} / {a.processLimit}
+                          </p>
+                          <div className="inline-flex items-center gap-0.5">
+                            <button
+                              onClick={() => handleAdjustLimit(a, -1)}
+                              disabled={busyCode === a.code || a.processLimit <= 0}
+                              title="Decrease run limit"
+                              className="p-1 rounded border border-slate-200 text-slate-500 hover:bg-slate-100 disabled:opacity-40"
+                            >
+                              <Minus className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={() => handleAdjustLimit(a, 1)}
+                              disabled={busyCode === a.code}
+                              title="Increase run limit"
+                              className="p-1 rounded border border-slate-200 text-slate-500 hover:bg-slate-100 disabled:opacity-40"
+                            >
+                              <Plus className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
                         <p className="text-xs text-slate-500">{a.processRemaining} remaining</p>
                       </td>
                       <td className="px-6 py-4">
