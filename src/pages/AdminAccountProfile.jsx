@@ -4,7 +4,7 @@ import {
   ArrowLeft, Shield, Users, BarChart3, LogOut, FileText, Loader2,
   AlertCircle, Calendar, Mail, Building, Hash, Clock, CheckCircle2,
   Edit3, XCircle, PlusCircle, ChevronRight, Eye, MessageSquare,
-  EyeOff, Minus, Plus, Pencil, Timer
+  EyeOff, Pencil, Timer
 } from 'lucide-react';
 import { useAuth } from '../store/AuthStore';
 import EditLimitsModal from '../components/EditLimitsModal';
@@ -74,7 +74,6 @@ const AdminAccountProfile = () => {
   const [tab, setTab] = useState('charts');
   const [openCategory, setOpenCategory] = useState(null);
   const [busyChart, setBusyChart] = useState(null);
-  const [savingProcess, setSavingProcess] = useState(false);
   const [showLimitsModal, setShowLimitsModal] = useState(false);
 
   const load = useCallback(async () => {
@@ -100,35 +99,6 @@ const AdminAccountProfile = () => {
   }, [code]);
 
   useEffect(() => { load(); }, [load]);
-
-  // Admin: bump the account's processing-run counters up or down
-  const adjustProcess = async (field, delta) => {
-    if (!account || savingProcess) return;
-    const current = field === 'processLimit' ? account.processLimit : account.processUsed;
-    const next = current + delta;
-    if (next < 0) return;
-    setSavingProcess(true);
-    setError('');
-    try {
-      const res = await fetch(`${API_BASE_URL}/admin/accounts/${code}/process`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ [field]: next })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Update failed');
-      setAccount(prev => ({
-        ...prev,
-        processLimit: data.account.processLimit,
-        processUsed: data.account.processUsed,
-        processRemaining: data.account.processRemaining
-      }));
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setSavingProcess(false);
-    }
-  };
 
   // Admin: hide/unhide a processed chart from the user's account
   const toggleHidden = async (chart) => {
@@ -234,50 +204,7 @@ const AdminAccountProfile = () => {
                       </button>
                     </div>
                     <p className="text-xl font-semibold text-slate-900">{account.processUsed} <span className="text-slate-400 text-sm font-normal">/ {account.processLimit}</span></p>
-                    <div className="mt-2 space-y-1.5">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-slate-500">Used</span>
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            onClick={() => adjustProcess('processUsed', -1)}
-                            disabled={savingProcess || account.processUsed <= 0}
-                            title="Decrease runs used"
-                            className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => adjustProcess('processUsed', 1)}
-                            disabled={savingProcess}
-                            title="Increase runs used"
-                            className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-slate-500">Limit</span>
-                        <div className="inline-flex items-center gap-1">
-                          <button
-                            onClick={() => adjustProcess('processLimit', -1)}
-                            disabled={savingProcess || account.processLimit <= 0}
-                            title="Decrease run limit"
-                            className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
-                          >
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={() => adjustProcess('processLimit', 1)}
-                            disabled={savingProcess}
-                            title="Increase run limit"
-                            className="p-1 rounded border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 disabled:opacity-40"
-                          >
-                            <Plus className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                    <p className="text-xs text-slate-500 mt-1">{account.processRemaining} remaining</p>
                   </div>
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
                     <p className="text-xs text-slate-500">Corrections</p>
