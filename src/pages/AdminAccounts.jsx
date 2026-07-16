@@ -3,12 +3,21 @@ import {
   Users, Ban, Search, Shield, Loader2,
   AlertCircle, CheckCircle2, X, FileText, LogOut,
   BarChart3, TrendingUp, Mail, Eye, ShieldCheck, MailCheck, MessageSquare,
-  Trash2, Minus, Plus
+  Trash2, Minus, Plus, Pencil
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../store/AuthStore';
+import EditLimitsModal from '../components/EditLimitsModal';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
+
+// Mirror of the backend's status derivation
+const computeStatus = (acc, used, limit) => {
+  if (acc.revoked) return 'revoked';
+  if (acc.validUntil && new Date(acc.validUntil) < new Date()) return 'expired';
+  if (used >= limit) return 'exhausted';
+  return 'active';
+};
 
 const StatusBadge = ({ status }) => {
   const map = {
@@ -36,6 +45,20 @@ const AdminAccounts = () => {
   const [success, setSuccess] = useState('');
   const [search, setSearch] = useState('');
   const [busyCode, setBusyCode] = useState(null);
+  const [editAccount, setEditAccount] = useState(null);
+
+  // Merge updated processing counters into the local accounts list
+  const applyProcessUpdate = useCallback((updated) => {
+    setAccounts(prev => prev.map(acc => acc.code === updated.code
+      ? {
+          ...acc,
+          processLimit: updated.processLimit,
+          processUsed: updated.processUsed,
+          processRemaining: updated.processRemaining,
+          status: computeStatus(acc, updated.processUsed, updated.processLimit)
+        }
+      : acc));
+  }, []);
 
   const load = useCallback(async () => {
     try {
@@ -133,22 +156,7 @@ const AdminAccounts = () => {
         setError(data.error || 'Update failed');
         return;
       }
-      // Recompute status the same way the backend does
-      const computeStatus = (acc, used, limit) => {
-        if (acc.revoked) return 'revoked';
-        if (acc.validUntil && new Date(acc.validUntil) < new Date()) return 'expired';
-        if (used >= limit) return 'exhausted';
-        return 'active';
-      };
-      setAccounts(prev => prev.map(acc => acc.code === a.code
-        ? {
-            ...acc,
-            processLimit: data.account.processLimit,
-            processUsed: data.account.processUsed,
-            processRemaining: data.account.processRemaining,
-            status: computeStatus(acc, data.account.processUsed, data.account.processLimit)
-          }
-        : acc));
+      applyProcessUpdate(data.account);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -357,6 +365,14 @@ const AdminAccounts = () => {
                             >
                               <Plus className="w-3 h-3" />
                             </button>
+                            <button
+                              onClick={() => setEditAccount(a)}
+                              disabled={busyCode === a.code}
+                              title="Set upload limits"
+                              className="p-1 rounded border border-slate-200 text-blue-600 hover:bg-blue-50 disabled:opacity-40"
+                            >
+                              <Pencil className="w-3 h-3" />
+                            </button>
                           </div>
                         </div>
                         <p className="text-xs text-slate-500">{a.processRemaining} remaining</p>
@@ -426,6 +442,14 @@ const AdminAccounts = () => {
           )}
         </div>
       </div>
+
+      {editAccount && (
+        <EditLimitsModal
+          account={editAccount}
+          onClose={() => setEditAccount(null)}
+          onSaved={applyProcessUpdate}
+        />
+      )}
     </div>
   );
 };

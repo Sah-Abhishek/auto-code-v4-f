@@ -4,9 +4,10 @@ import {
   ArrowLeft, Shield, Users, BarChart3, LogOut, FileText, Loader2,
   AlertCircle, Calendar, Mail, Building, Hash, Clock, CheckCircle2,
   Edit3, XCircle, PlusCircle, ChevronRight, Eye, MessageSquare,
-  EyeOff, Minus, Plus
+  EyeOff, Minus, Plus, Pencil, Timer
 } from 'lucide-react';
 import { useAuth } from '../store/AuthStore';
+import EditLimitsModal from '../components/EditLimitsModal';
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000/api';
 
@@ -74,6 +75,7 @@ const AdminAccountProfile = () => {
   const [openCategory, setOpenCategory] = useState(null);
   const [busyChart, setBusyChart] = useState(null);
   const [savingProcess, setSavingProcess] = useState(false);
+  const [showLimitsModal, setShowLimitsModal] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -221,7 +223,16 @@ const AdminAccountProfile = () => {
                     <p className="text-xl font-semibold text-slate-900">{charts.length}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-500">Processing</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs text-slate-500">Processing</p>
+                      <button
+                        onClick={() => setShowLimitsModal(true)}
+                        title="Set upload limits"
+                        className="p-1 rounded text-blue-600 hover:bg-blue-50"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                     <p className="text-xl font-semibold text-slate-900">{account.processUsed} <span className="text-slate-400 text-sm font-normal">/ {account.processLimit}</span></p>
                     <div className="mt-2 space-y-1.5">
                       <div className="flex items-center justify-between gap-2">
@@ -308,6 +319,7 @@ const AdminAccountProfile = () => {
                             <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase">Facility / Specialty</th>
                             <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase">Review</th>
                             <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase">Corrections</th>
+                            <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase">Processing Time</th>
                             <th className="text-left px-6 py-3 text-xs font-semibold text-slate-600 uppercase">Uploaded</th>
                             <th className="text-right px-6 py-3 text-xs font-semibold text-slate-600 uppercase">Action</th>
                           </tr>
@@ -335,6 +347,25 @@ const AdminAccountProfile = () => {
                                 <span className={`text-sm font-medium ${c.correctionCount > 0 ? 'text-amber-700' : 'text-slate-400'}`}>
                                   {c.correctionCount}
                                 </span>
+                              </td>
+                              <td className="px-6 py-3">
+                                {!c.processingTime || (!c.processingTime.isComplete && c.aiStatus === 'failed') ? (
+                                  <span className="text-sm text-slate-400">—</span>
+                                ) : (
+                                  <span className={`inline-flex items-center gap-1.5 text-sm font-medium ${
+                                    !c.processingTime.isComplete ? 'text-blue-600'
+                                    : c.processingTime.isCritical ? 'text-red-600'
+                                    : c.processingTime.isWarning ? 'text-amber-700'
+                                    : c.processingTime.isExcellent ? 'text-emerald-700'
+                                    : 'text-slate-700'
+                                  }`}>
+                                    <Timer className="w-3.5 h-3.5" />
+                                    {c.processingTime.display}
+                                    {!c.processingTime.isComplete && (
+                                      <span className="text-xs font-normal text-blue-500">running</span>
+                                    )}
+                                  </span>
+                                )}
                               </td>
                               <td className="px-6 py-3 text-sm text-slate-500 inline-flex items-center gap-1.5">
                                 <Clock className="w-3.5 h-3.5" />
@@ -490,6 +521,19 @@ const AdminAccountProfile = () => {
           </>
         )}
       </div>
+
+      {showLimitsModal && account && (
+        <EditLimitsModal
+          account={{ ...account, code }}
+          onClose={() => setShowLimitsModal(false)}
+          onSaved={(updated) => setAccount(prev => ({
+            ...prev,
+            processLimit: updated.processLimit,
+            processUsed: updated.processUsed,
+            processRemaining: updated.processRemaining
+          }))}
+        />
+      )}
     </div>
   );
 };
