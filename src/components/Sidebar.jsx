@@ -3,7 +3,6 @@ import { NavLink } from 'react-router-dom';
 import {
   ListTodo,
   FileInput,
-  Stethoscope,
   ChevronLeft,
   ChevronRight,
   LogOut,
@@ -103,10 +102,12 @@ const Sidebar = () => {
         }`}
     >
       {/* Logo */}
-      <div className={`flex items-center gap-2.5 px-4 py-5 border-b border-slate-100 ${isCollapsed ? 'justify-center' : ''}`}>
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center shadow-lg shadow-blue-200 flex-shrink-0">
-          <Stethoscope className="w-5 h-5 text-white" />
-        </div>
+      <div className={`flex flex-col items-center gap-1.5 px-4 py-5 border-b border-slate-100 ${isCollapsed ? 'px-2' : ''}`}>
+        <img
+          src="/valerion-logo-L.png"
+          alt="Valerion Health"
+          className="h-7 w-auto max-w-full object-contain"
+        />
         {!isCollapsed && (
           <span className="text-lg font-bold text-slate-900 whitespace-nowrap">Nxtcodeai</span>
         )}
