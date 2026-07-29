@@ -102,14 +102,14 @@ const Sidebar = () => {
         }`}
     >
       {/* Logo */}
-      <div className={`flex flex-col items-center gap-1.5 px-4 py-5 border-b border-slate-100 ${isCollapsed ? 'px-2' : ''}`}>
+      <div className={`flex flex-col items-center gap-1 px-4 py-3 border-b border-slate-100 ${isCollapsed ? 'px-2' : ''}`}>
         <img
           src="/valerion-logo-L.png"
           alt="Valerion Health"
-          className="h-7 w-auto max-w-full object-contain"
+          className="h-8 w-auto max-w-full object-contain"
         />
         {!isCollapsed && (
-          <span className="text-lg font-bold text-slate-900 whitespace-nowrap">Nxtcodeai</span>
+          <span className="text-sm font-semibold text-slate-900 whitespace-nowrap">Nxtcodeai</span>
         )}
       </div>
 
