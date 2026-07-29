@@ -56,8 +56,12 @@ export default function Landing() {
 
       <header ref={navRef} className="sticky top-0 z-40 bg-[#F8FAFC]/80 backdrop-blur border-b border-transparent">
         <Container className="flex items-center justify-between h-16">
-          <Link to="/" className="flex items-center" aria-label="Nxtcodeai home">
+          <Link to="/" className="flex items-center gap-2" aria-label="Nxtcodeai home">
             <img src="/valerion-logo-L.png" alt="Valerion Health" className="h-8 w-auto object-contain" />
+            <span className="flex items-baseline gap-0.5">
+              <span className="display text-xl font-semibold text-[#0F172A]">Nxtcode</span>
+              <span className="text-[0.95rem] font-semibold text-[#0369A1]">ai</span>
+            </span>
           </Link>
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-[#334155]" aria-label="Primary">
             <a href="#product" className="hover:text-[#0F172A] transition-colors">Product</a>
