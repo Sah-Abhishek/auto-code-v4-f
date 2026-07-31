@@ -15,7 +15,7 @@ const DocumentIngestion = () => {
     mrn: '',
     chartNumber: '',
     facility: '',
-    specialty: 'ED Facility',
+    specialty: 'EM-OP',
     dateOfService: '',
     provider: ''
   });
@@ -46,20 +46,28 @@ const DocumentIngestion = () => {
 
   const facilities = ["St. Mary's Medical Center", 'Community Medical', 'Regional Hospital', 'Metro General', 'University Health'];
   const specialties = [
-    'ED Facility',
-    'EM',
-    'SDS',
-    'General Surgery',
-    'Wound Care',
-    'ASC',
-    'Ancillary',
-    'IP-DRG',
-    'HCC',
-    'PT/OT',
-    'Pathology',
-    'Radiology',
-    'Interventional Radiology',
-    'Denial/ Edits'
+    { value: 'Service line (sub specialty)', disabled: true },
+    { value: 'ED Facility', disabled: true },
+    { value: 'I&I Administration', disabled: true },
+    { value: 'ED Profee', disabled: true },
+    { value: 'EM-OP', disabled: false },
+    { value: 'EM-IP', disabled: true },
+    { value: 'EM Procedure', disabled: true },
+    { value: 'Ob-gyn', disabled: true },
+    { value: 'New born', disabled: true },
+    { value: 'SDS', disabled: true },
+    { value: 'General Surgery', disabled: true },
+    { value: 'WHC Profee/facility', disabled: true },
+    { value: 'ASC', disabled: true },
+    { value: 'Ancillary', disabled: true },
+    { value: 'IP-DRG', disabled: true },
+    { value: 'HCC', disabled: true },
+    { value: 'PT/OT', disabled: true },
+    { value: 'Surgical Pathology', disabled: true },
+    { value: 'Macular Pathology', disabled: true },
+    { value: 'Radiology', disabled: true },
+    { value: 'IVR', disabled: true },
+    { value: 'Denial/ Edits', disabled: true }
   ];
 
   const getTabColor = (tabId, type = 'bg') => {
@@ -91,9 +99,18 @@ const DocumentIngestion = () => {
     }
   };
 
-  // Handle PDF uploads (direct, no grouping needed)
+  // Accept PDFs and Word docs (.doc/.docx). Word files are converted to PDF
+  // server-side before being sent to the AI system. Match by MIME type, with
+  // a filename-extension fallback since browsers report Word MIMEs unreliably.
+  const isDocumentFile = (f) =>
+    f.type === 'application/pdf' ||
+    f.type === 'application/msword' ||
+    f.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    /\.(pdf|docx?)$/i.test(f.name);
+
+  // Handle PDF / Word uploads (direct, no grouping needed)
   const handlePdfUpload = (files) => {
-    const pdfFiles = files.filter(f => f.type === 'application/pdf');
+    const pdfFiles = files.filter(isDocumentFile);
     const newFiles = pdfFiles.map((file, idx) => ({
       id: Date.now() + idx,
       name: file.name,
@@ -309,6 +326,10 @@ const DocumentIngestion = () => {
       return;
     }
 
+    if (!window.confirm(`Are you sure this is a ${formData.specialty} document?`)) {
+      return;
+    }
+
     // Check for staged images that haven't been grouped
     if (stagedImages.length > 0) {
       setSubmitResult({
@@ -508,7 +529,7 @@ const DocumentIngestion = () => {
                     <div className="w-8 h-8 rounded-lg bg-red-50 flex items-center justify-center">
                       <FileText className="w-4 h-4 text-red-500" />
                     </div>
-                    <span className="font-medium text-slate-800 text-sm">PDF Documents</span>
+                    <span className="font-medium text-slate-800 text-sm">PDF &amp; Word Documents</span>
                   </div>
                   {currentUploads.pdfs.length > 0 && <span className="text-xs text-slate-500">{currentUploads.pdfs.length} file(s)</span>}
                 </div>
@@ -520,9 +541,9 @@ const DocumentIngestion = () => {
                   onDragOver={(e) => handleDrag(e, 'pdf', true)}
                   onDrop={(e) => handleDrop(e, 'pdfs')}
                 >
-                  <input type="file" accept=".pdf" multiple onChange={(e) => handleFileInput(e, 'pdfs')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+                  <input type="file" accept=".pdf,.doc,.docx" multiple onChange={(e) => handleFileInput(e, 'pdfs')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                   <FileIcon className="w-8 h-8 text-red-300 mx-auto mb-2" />
-                  <p className="text-sm text-slate-600 font-medium">Drop PDFs here</p>
+                  <p className="text-sm text-slate-600 font-medium">Drop PDF or Word files here</p>
                   <p className="text-xs text-slate-400 mt-1">or click to browse</p>
                 </div>
 
@@ -755,7 +776,7 @@ const DocumentIngestion = () => {
               />
             </div>
 
-            <div className="space-y-1.5">
+            {/* <div className="space-y-1.5">
               <label className="block text-sm font-medium text-slate-700">Facility</label>
               <div className="relative group">
                 <Building2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none z-10" />
@@ -769,7 +790,7 @@ const DocumentIngestion = () => {
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none" />
               </div>
-            </div>
+            </div> */}
 
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-slate-700">Specialty</label>
@@ -780,7 +801,11 @@ const DocumentIngestion = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, specialty: e.target.value }))}
                   className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-slate-300 bg-white text-sm font-medium text-slate-900 shadow-sm hover:border-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none appearance-none cursor-pointer transition-colors"
                 >
-                  {specialties.map(s => <option key={s} value={s} className="text-slate-900">{s}</option>)}
+                  {specialties.map(s => (
+                    <option key={s.value} value={s.value} disabled={s.disabled} className="text-slate-900">
+                      {s.value}{s.disabled ? ' (Coming Soon)' : ''}
+                    </option>
+                  ))}
                 </select>
                 <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors pointer-events-none" />
               </div>
@@ -796,7 +821,7 @@ const DocumentIngestion = () => {
               />
             </div>
 
-            <div className="space-y-1.5">
+            {/* <div className="space-y-1.5">
               <label className="block text-sm font-medium text-slate-700">Practitioner</label>
               <input
                 type="text"
@@ -805,7 +830,7 @@ const DocumentIngestion = () => {
                 onChange={(e) => setFormData(prev => ({ ...prev, provider: e.target.value }))}
                 className="w-full px-4 py-2.5 rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
               />
-            </div>
+            </div> */}
           </div>
         </div>
 
